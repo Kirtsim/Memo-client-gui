@@ -16,17 +16,21 @@ find_package(Qt6 COMPONENTS
 
 add_executable(Memo_client_gui)
 
+set(memo_proto_lib memo_proto)
+add_subdirectory(${CMAKE_SOURCE_DIR}/Memo-proto)
+
 target_include_directories(Memo_client_gui
         PRIVATE
-        src)
+        src
+        )
 
 target_sources(Memo_client_gui
         PRIVATE
         src/main.cpp
-        src/MainWindow.cpp)
+        src/MainWindow.cpp
+        )
 target_link_libraries(Memo_client_gui
         Qt::Core
         Qt::Gui
         Qt::Widgets
         )
-
