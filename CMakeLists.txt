@@ -16,9 +16,14 @@ find_package(Qt6 COMPONENTS
 
 add_executable(Memo_client_gui)
 
+target_include_directories(Memo_client_gui
+        PRIVATE
+        src)
+
 target_sources(Memo_client_gui
         PRIVATE
-        main.cpp)
+        src/main.cpp
+        src/MainWindow.cpp)
 target_link_libraries(Memo_client_gui
         Qt::Core
         Qt::Gui
