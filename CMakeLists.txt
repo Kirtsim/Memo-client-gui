@@ -28,6 +28,8 @@ target_sources(Memo_client_gui
         PRIVATE
         src/main.cpp
         src/MainWindow.cpp
+        src/model/Memo.cpp
+        src/model/Tag.cpp
         )
 target_link_libraries(Memo_client_gui
         Qt::Core
