@@ -21,8 +21,8 @@ add_subdirectory(${CMAKE_SOURCE_DIR}/Memo-proto)
 
 target_include_directories(Memo_client_gui
         PRIVATE
-        src
-        Memo-proto/model
+        ${CMAKE_SOURCE_DIR}/src
+        ${CMAKE_SOURCE_DIR}/Memo-proto/model
         )
 
 target_sources(Memo_client_gui
@@ -31,6 +31,7 @@ target_sources(Memo_client_gui
         src/MainWindow.cpp
         src/model/Memo.cpp
         src/model/Tag.cpp
+        src/model/conversions.cpp
         )
 target_link_libraries(Memo_client_gui
         Qt::Core
