@@ -1,6 +1,6 @@
 #include "model/Memo.hpp"
 
-namespace model {
+namespace memo::model {
 
 void Memo::setId(unsigned long id)
 {
@@ -60,4 +60,4 @@ unsigned long Memo::timestamp() const
     return timestamp_;
 }
 
-} // namespace model
+} // namespace memo::model

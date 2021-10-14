@@ -1,6 +1,6 @@
 #include "Tag.hpp"
 
-namespace model {
+namespace memo::model {
 
 void Tag::setId(unsigned long id)
 {
@@ -42,4 +42,4 @@ unsigned long Tag::timestamp() const
     return timestamp_;
 }
 
-} // namespace model
+} // namespace memo::model

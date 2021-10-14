@@ -3,7 +3,7 @@
 #include <vector>
 #include <memory>
 
-namespace model {
+namespace memo::model {
 
 class Tag;
 
@@ -40,4 +40,4 @@ private:
     unsigned long timestamp_ = 0;
 };
 
-} // namespace model
+} // namespace memo::model

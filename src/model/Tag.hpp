@@ -2,12 +2,11 @@
 #include <string>
 
 
-namespace model {
+namespace memo::model {
 
 class Tag
 {
 public:
-
     void setId(unsigned long id);
 
     unsigned long id() const;
@@ -31,4 +30,4 @@ private:
     unsigned long timestamp_ = 0;
 };
 
-} // namespace model
+} // namespace memo::model
