@@ -32,6 +32,11 @@ target_sources(Memo_client_gui
         src/model/Memo.cpp
         src/model/Tag.cpp
         src/model/conversions.cpp
+        src/remote/GrpcClient.cpp
+
+        PUBLIC
+        src/remote/IGrpcClient.hpp
+        src/remote/GrpcClient.hpp
         )
 target_link_libraries(Memo_client_gui
         Qt::Core
