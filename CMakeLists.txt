@@ -37,6 +37,7 @@ target_sources(Memo_client_gui
         PUBLIC
         src/remote/IGrpcClient.hpp
         src/remote/GrpcClient.hpp
+        src/remote/GrpcResponse.hpp
         )
 target_link_libraries(Memo_client_gui
         Qt::Core

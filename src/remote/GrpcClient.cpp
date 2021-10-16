@@ -1,6 +1,7 @@
 #include "remote/GrpcClient.hpp"
 #include "MemoSvc.grpc.pb.h"
 #include "TagSvc.grpc.pb.h"
+#include <grpcpp/grpcpp.h>
 
 namespace memo {
 
@@ -11,7 +12,6 @@ public:
 
     std::unique_ptr<proto::MemoService::StubInterface> memoStub;
     std::unique_ptr<proto::TagService::StubInterface> tagStub;
-    grpc::CompletionQueue completionQueue;
 };
 
 Grpc_::Grpc_(const std::string& fullAddress)
@@ -32,49 +32,83 @@ GrpcClient::~GrpcClient()
     // TODO: cleanup the completion queue.
 }
 
-grpc::Status GrpcClient::status()
+bool GrpcClient::ping()
 {
-    return grpc::Status();
+    return false;
 }
 
-proto::ListMemosRs GrpcClient::listMemos(const proto::ListMemosRq& request)
+namespace {
+    void wait(grpc::CompletionQueue& queue);
+} // namespace
+
+GrpcResponse<proto::ListMemosRs> GrpcClient::listMemos(const proto::ListMemosRq& request)
 {
-    return proto::ListMemosRs();
+    proto::ListMemosRs response;
+    grpc::ClientContext context;
+    grpc::CompletionQueue queue;
+
+    auto reader = grpc_->memoStub->PrepareAsyncListMemos(&context, request, &queue);
+    if (!reader)
+    {
+        // TODO: Log
+        return { false, std::move(response) };
+    }
+
+    grpc::Status status;
+    reader->StartCall();
+    reader->Finish(&response, &status, (void*)this);
+    wait(queue);
+    if (!status.ok())
+    {
+        // TODO: Log
+    }
+
+    return { status.ok(), std::move(response) };
 }
 
-proto::AddMemoRs GrpcClient::addMemo(const proto::AddMemoRq& request)
+GrpcResponse<proto::AddMemoRs> GrpcClient::addMemo(const proto::AddMemoRq& request)
 {
-    return proto::AddMemoRs();
+    return { false, proto::AddMemoRs() };
 }
 
-proto::UpdateMemoRs GrpcClient::updateMemo(const proto::UpdateMemoRq& request)
+GrpcResponse<proto::UpdateMemoRs> GrpcClient::updateMemo(const proto::UpdateMemoRq& request)
 {
-    return proto::UpdateMemoRs();
+    return { false, proto::UpdateMemoRs() };
 }
 
-proto::RemoveMemoRs GrpcClient::removeMemo(const proto::RemoveMemoRq& request)
+GrpcResponse<proto::RemoveMemoRs> GrpcClient::removeMemo(const proto::RemoveMemoRq& request)
 {
-    return proto::RemoveMemoRs();
+    return { false, proto::RemoveMemoRs() };
 }
 
-proto::ListTagsRs GrpcClient::listTags(const proto::ListTagsRq& request)
+GrpcResponse<proto::ListTagsRs> GrpcClient::listTags(const proto::ListTagsRq& request)
 {
-    return proto::ListTagsRs();
+    return { false, proto::ListTagsRs() };
 }
 
-proto::AddTagRs GrpcClient::addTag(const proto::AddTagRq& request)
+GrpcResponse<proto::AddTagRs> GrpcClient::addTag(const proto::AddTagRq& request)
 {
-    return proto::AddTagRs();
+    return { false, proto::AddTagRs() };
 }
 
-proto::UpdateTagRs GrpcClient::updateTag(const proto::UpdateTagRq& request)
+GrpcResponse<proto::UpdateTagRs> GrpcClient::updateTag(const proto::UpdateTagRq& request)
 {
-    return proto::UpdateTagRs();
+    return { false, proto::UpdateTagRs() };
 }
 
-proto::RemoveTagRs GrpcClient::removeTag(const proto::RemoveTagRq& request)
+GrpcResponse<proto::RemoveTagRs> GrpcClient::removeTag(const proto::RemoveTagRq& request)
 {
-    return proto::RemoveTagRs();
+    return { false, proto::RemoveTagRs() };
 }
 
+namespace {
+    void wait(grpc::CompletionQueue& queue)
+    {
+        void* tag;
+        bool flag = false;
+
+        // block the main thread until a response arrives
+        queue.Next(&tag, &flag); // flag always true according to the documentation
+    }
+} // namespace
 } // namespace memo
