@@ -8,7 +8,7 @@ namespace memo {
 class Grpc_
 {
 public:
-    Grpc_(const std::string& fullAddress);
+    explicit Grpc_(const std::string& fullAddress);
 
     std::unique_ptr<proto::MemoService::StubInterface> memoStub;
     std::unique_ptr<proto::TagService::StubInterface> tagStub;
