@@ -3,6 +3,7 @@
 #include "TagSvc.grpc.pb.h"
 #include <grpcpp/grpcpp.h>
 #include <functional>
+#include <iostream>
 
 namespace memo {
 
@@ -29,7 +30,6 @@ GrpcClient::GrpcClient(const std::string& address, const std::string& port)
 }
 
 GrpcClient::~GrpcClient() = default;
-
 
 bool GrpcClient::ping()
 {
@@ -120,6 +120,30 @@ GrpcResponse<proto::RemoveTagRs> GrpcClient::removeTag(const proto::RemoveTagRq&
 }
 
 namespace {
+    class QueueScopeGuard
+    {
+    public:
+        QueueScopeGuard(grpc::CompletionQueue& queue);
+
+        ~QueueScopeGuard();
+
+    private:
+        grpc::CompletionQueue& queue_;
+    };
+
+    QueueScopeGuard::QueueScopeGuard(grpc::CompletionQueue& queue)
+            : queue_(queue)
+    {
+    }
+
+    QueueScopeGuard::~QueueScopeGuard()
+    {
+        queue_.Shutdown();
+
+        void* ignoredTag;
+        bool  ignoredStatus;
+        while (queue_.Next(&ignoredTag, &ignoredStatus));
+    }
 
     void wait(grpc::CompletionQueue& queue);
 
@@ -129,6 +153,7 @@ namespace {
         Response response;
         grpc::ClientContext context;
         grpc::CompletionQueue queue;
+        QueueScopeGuard queueScopeGuard(queue);
 
         auto reader = provideReader(&context, &queue);
         if (!reader)
