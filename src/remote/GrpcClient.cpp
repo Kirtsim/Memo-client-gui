@@ -2,6 +2,7 @@
 #include "MemoSvc.grpc.pb.h"
 #include "TagSvc.grpc.pb.h"
 #include <grpcpp/grpcpp.h>
+#include <functional>
 
 namespace memo {
 
@@ -27,10 +28,8 @@ GrpcClient::GrpcClient(const std::string& address, const std::string& port)
 {
 }
 
-GrpcClient::~GrpcClient()
-{
-    // TODO: cleanup the completion queue.
-}
+GrpcClient::~GrpcClient() = default;
+
 
 bool GrpcClient::ping()
 {
@@ -38,70 +37,118 @@ bool GrpcClient::ping()
 }
 
 namespace {
-    void wait(grpc::CompletionQueue& queue);
+    template<class Response>
+    using ClientReaderPtr = std::unique_ptr<grpc::ClientAsyncResponseReaderInterface<Response>>;
+
+    template<class Response>
+    using ProvideReader = std::function<ClientReaderPtr<Response>(grpc::ClientContext*, grpc::CompletionQueue*)>;
+
+    template<class Response>
+    GrpcResponse<Response> performCall(const ProvideReader<Response>& provideReader);
 } // namespace
 
 GrpcResponse<proto::ListMemosRs> GrpcClient::listMemos(const proto::ListMemosRq& request)
 {
-    proto::ListMemosRs response;
-    grpc::ClientContext context;
-    grpc::CompletionQueue queue;
-
-    auto reader = grpc_->memoStub->PrepareAsyncListMemos(&context, request, &queue);
-    if (!reader)
+    auto provideReader = [&](grpc::ClientContext* context, grpc::CompletionQueue* queue)
     {
-        // TODO: Log
-        return { false, std::move(response) };
-    }
-
-    grpc::Status status;
-    reader->StartCall();
-    reader->Finish(&response, &status, (void*)this);
-    wait(queue);
-    if (!status.ok())
-    {
-        // TODO: Log
-    }
-
-    return { status.ok(), std::move(response) };
+        return grpc_->memoStub->PrepareAsyncListMemos(context, request, queue);
+    };
+    return performCall<proto::ListMemosRs>(provideReader);
 }
 
 GrpcResponse<proto::AddMemoRs> GrpcClient::addMemo(const proto::AddMemoRq& request)
 {
-    return { false, proto::AddMemoRs() };
+    auto provideReader = [&](grpc::ClientContext* context, grpc::CompletionQueue* queue)
+    {
+        return grpc_->memoStub->PrepareAsyncAddMemo(context, request, queue);
+    };
+    return performCall<proto::AddMemoRs>(provideReader);
 }
 
 GrpcResponse<proto::UpdateMemoRs> GrpcClient::updateMemo(const proto::UpdateMemoRq& request)
 {
-    return { false, proto::UpdateMemoRs() };
+    auto provideReader = [&](grpc::ClientContext* context, grpc::CompletionQueue* queue)
+    {
+        return grpc_->memoStub->PrepareAsyncUpdateMemo(context, request, queue);
+    };
+    return performCall<proto::UpdateMemoRs>(provideReader);
 }
 
 GrpcResponse<proto::RemoveMemoRs> GrpcClient::removeMemo(const proto::RemoveMemoRq& request)
 {
-    return { false, proto::RemoveMemoRs() };
+    auto provideReader = [&](grpc::ClientContext* context, grpc::CompletionQueue* queue)
+    {
+        return grpc_->memoStub->PrepareAsyncRemoveMemo(context, request, queue);
+    };
+    return performCall<proto::RemoveMemoRs>(provideReader);
 }
 
 GrpcResponse<proto::ListTagsRs> GrpcClient::listTags(const proto::ListTagsRq& request)
 {
-    return { false, proto::ListTagsRs() };
+    auto provideReader = [&](grpc::ClientContext* context, grpc::CompletionQueue* queue)
+    {
+        return grpc_->tagStub->PrepareAsyncListTags(context, request, queue);
+    };
+    return performCall<proto::ListTagsRs>(provideReader);
 }
 
 GrpcResponse<proto::AddTagRs> GrpcClient::addTag(const proto::AddTagRq& request)
 {
-    return { false, proto::AddTagRs() };
+    auto provideReader = [&](grpc::ClientContext* context, grpc::CompletionQueue* queue)
+    {
+        return grpc_->tagStub->PrepareAsyncAddTag(context, request, queue);
+    };
+    return performCall<proto::AddTagRs>(provideReader);
 }
 
 GrpcResponse<proto::UpdateTagRs> GrpcClient::updateTag(const proto::UpdateTagRq& request)
 {
-    return { false, proto::UpdateTagRs() };
+    auto provideReader = [&](grpc::ClientContext* context, grpc::CompletionQueue* queue)
+    {
+        return grpc_->tagStub->PrepareAsyncUpdateTag(context, request, queue);
+    };
+    return performCall<proto::UpdateTagRs>(provideReader);
 }
 
 GrpcResponse<proto::RemoveTagRs> GrpcClient::removeTag(const proto::RemoveTagRq& request)
 {
-    return { false, proto::RemoveTagRs() };
+    auto provideReader = [&](grpc::ClientContext* context, grpc::CompletionQueue* queue)
+    {
+        return grpc_->tagStub->PrepareAsyncRemoveTag(context, request, queue);
+    };
+    return performCall<proto::RemoveTagRs>(provideReader);
 }
 
 namespace {
+
+    void wait(grpc::CompletionQueue& queue);
+
+    template<class Response>
+    GrpcResponse<Response> performCall(const ProvideReader<Response>& provideReader)
+    {
+        Response response;
+        grpc::ClientContext context;
+        grpc::CompletionQueue queue;
+
+        auto reader = provideReader(&context, &queue);
+        if (!reader)
+        {
+            // TODO: Log
+            return { false, std::move(response) };
+        }
+
+        grpc::Status status;
+        reader->StartCall();
+        reader->Finish(&response, &status, nullptr);
+        wait(queue);
+        if (!status.ok())
+        {
+            // TODO: Log
+        }
+
+        return { status.ok(), std::move(response) };
+    }
+
     void wait(grpc::CompletionQueue& queue)
     {
         void* tag;
