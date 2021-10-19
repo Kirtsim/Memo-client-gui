@@ -33,12 +33,30 @@ target_sources(Memo_client_gui
         src/model/Tag.cpp
         src/model/conversions.cpp
         src/remote/GrpcClient.cpp
+        src/remote/model/ListMemos.cpp
+        src/remote/model/AddMemo.cpp
+        src/remote/model/UpdateMemo.cpp
+        src/remote/model/RemoveMemo.cpp
+        src/remote/model/ListTags.cpp
+        src/remote/model/AddTag.cpp
+        src/remote/model/UpdateTag.cpp
+        src/remote/model/RemoveTag.cpp
 
         PUBLIC
         src/remote/IGrpcClient.hpp
         src/remote/GrpcClient.hpp
         src/remote/GrpcResponse.hpp
         src/remote/IGrpcClientAdapter.hpp
+        src/remote/model/ModelView.hpp
+        src/remote/model/OperationStatus.hpp
+        src/remote/model/ListMemos.hpp
+        src/remote/model/AddMemo.hpp
+        src/remote/model/UpdateMemo.hpp
+        src/remote/model/RemoveMemo.hpp
+        src/remote/model/ListTags.hpp
+        src/remote/model/AddTag.hpp
+        src/remote/model/UpdateTag.hpp
+        src/remote/model/RemoveTag.hpp
         )
 target_link_libraries(Memo_client_gui
         Qt::Core
