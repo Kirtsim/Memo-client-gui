@@ -6,10 +6,10 @@ namespace memo::remote {
 struct OperationStatus
 {
     enum Type {
-        FAILURE;
-        WARNING;
-        SUCCESS;
-    } type;
+        kFailure,
+        kWarning,
+        kSuccess,
+    } type = kSuccess;
     int code;
     std::string comment;
 };

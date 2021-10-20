@@ -10,8 +10,6 @@
 #include "remote/model/RemoveTag.hpp"
 #include "remote/ClientAdapterUtils.hpp"
 #include "model/conversions.hpp"
-#include "MemoSvc.pb.h"
-#include "TagSvc.pb.h"
 
 
 namespace memo {
@@ -35,46 +33,87 @@ GrpcResponse<remote::ListMemosResponse> GrpcClientAdapter::listMemos(const remot
     const auto protoRequest = ListMemos::CreateProtoRequest(request);
 
     const auto grpcResponse = client_->listMemos(protoRequest);
-    const auto& protoResponse = grpcResponse.body();
 
-    const auto responseData = ListMemos::ExtractResponseData(protoResponse);
+    const auto responseData = ListMemos::ExtractResponseData(grpcResponse.body());
     const auto response = remote::ListMemosResponse::Construct(responseData);
     return { grpcResponse.ok(), response };
 }
 
 GrpcResponse<remote::AddMemoResponse> GrpcClientAdapter::addMemo(const remote::AddMemoRequest& request)
 {
-    return GrpcResponse<remote::AddMemoResponse>(false, remote::AddMemoResponse());
+    const auto protoRequest = AddMemo::CreateProtoRequest(request);
+
+    const auto grpcResponse = client_->addMemo(protoRequest);
+
+    const auto responseData = AddMemo::ExtractResponseData(grpcResponse.body());
+    const auto response = remote::AddMemoResponse::Construct(responseData);
+    return { grpcResponse.ok(), response };
 }
 
 GrpcResponse<remote::UpdateMemoResponse> GrpcClientAdapter::updateMemo(const remote::UpdateMemoRequest& request)
 {
-    return GrpcResponse<remote::UpdateMemoResponse>(false, remote::UpdateMemoResponse());
+    const auto protoRequest = UpdateMemo::CreateProtoRequest(request);
+
+    const auto grpcResponse = client_->updateMemo(protoRequest);
+
+    const auto responseData = UpdateMemo::ExtractResponseData(grpcResponse.body());
+    const auto response = remote::UpdateMemoResponse::Construct(responseData);
+    return { grpcResponse.ok(), response };
 }
 
 GrpcResponse<remote::RemoveMemoResponse> GrpcClientAdapter::removeMemo(const remote::RemoveMemoRequest& request)
 {
-    return GrpcResponse<remote::RemoveMemoResponse>(false, remote::RemoveMemoResponse());
+    const auto protoRequest = RemoveMemo::CreateProtoRequest(request);
+
+    const auto grpcResponse = client_->removeMemo(protoRequest);
+
+    const auto responseData = RemoveMemo::ExtractResponseData(grpcResponse.body());
+    const auto response = remote::RemoveMemoResponse::Construct(responseData);
+    return { grpcResponse.ok(), response };
 }
 
 GrpcResponse<remote::ListTagsResponse> GrpcClientAdapter::listTags(const remote::ListTagsRequest& request)
 {
-    return GrpcResponse<remote::ListTagsResponse>(false, remote::ListTagsResponse());
+    const auto protoRequest = ListTags::CreateProtoRequest(request);
+
+    const auto grpcResponse = client_->listTags(protoRequest);
+
+    const auto responseData = ListTags::ExtractResponseData(grpcResponse.body());
+    const auto response = remote::ListTagsResponse::Construct(responseData);
+    return { grpcResponse.ok(), response };
 }
 
 GrpcResponse<remote::AddTagResponse> GrpcClientAdapter::addTag(const remote::AddTagRequest& request)
 {
-    return GrpcResponse<remote::AddTagResponse>(false, remote::AddTagResponse());
+    const auto protoRequest = AddTag::CreateProtoRequest(request);
+
+    const auto grpcResponse = client_->addTag(protoRequest);
+
+    const auto responseData = AddTag::ExtractResponseData(grpcResponse.body());
+    const auto response = remote::AddTagResponse::Construct(responseData);
+    return { grpcResponse.ok(), response };
 }
 
 GrpcResponse<remote::UpdateTagResponse> GrpcClientAdapter::updateTag(const remote::UpdateTagRequest& request)
 {
-    return GrpcResponse<remote::UpdateTagResponse>(false, remote::UpdateTagResponse());
+    const auto protoRequest = UpdateTag::CreateProtoRequest(request);
+
+    const auto grpcResponse = client_->updateTag(protoRequest);
+
+    const auto responseData = UpdateTag::ExtractResponseData(grpcResponse.body());
+    const auto response = remote::UpdateTagResponse::Construct(responseData);
+    return { grpcResponse.ok(), response };
 }
 
 GrpcResponse<remote::RemoveTagResponse> GrpcClientAdapter::removeTag(const remote::RemoveTagRequest& request)
 {
-    return GrpcResponse<remote::RemoveTagResponse>(false, remote::RemoveTagResponse());
+    const auto protoRequest = RemoveTag::CreateProtoRequest(request);
+
+    const auto grpcResponse = client_->removeTag(protoRequest);
+
+    const auto responseData = RemoveTag::ExtractResponseData(grpcResponse.body());
+    const auto response = remote::RemoveTagResponse::Construct(responseData);
+    return { grpcResponse.ok(), response };
 }
 
 } // namespace memo
