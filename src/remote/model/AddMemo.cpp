@@ -24,6 +24,6 @@ unsigned long AddMemoResponse::addedMemoId() const
 
 const OperationStatus& AddMemoResponse::operationStatus() const
 {
-    return operationStatus_
+    return operationStatus_;
 }
 } // namespace memo::remote

@@ -19,9 +19,7 @@ namespace memo {
 class IGrpcClientAdapter
 {
 public:
-    virtual ~IGrpcClientAdapter();
-
-    virtual ~IGrpcClient() = default;
+    virtual ~IGrpcClientAdapter() = default;
 
     virtual bool ping() = 0;
 
