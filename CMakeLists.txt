@@ -33,6 +33,8 @@ target_sources(Memo_client_gui
         src/model/Tag.cpp
         src/model/conversions.cpp
         src/remote/GrpcClient.cpp
+        src/remote/GrpcClientAdapter.cpp
+        src/remote/ClientAdapterUtils.cpp
         src/remote/model/ListMemos.cpp
         src/remote/model/AddMemo.cpp
         src/remote/model/UpdateMemo.cpp
@@ -45,6 +47,9 @@ target_sources(Memo_client_gui
         PUBLIC
         src/remote/IGrpcClient.hpp
         src/remote/GrpcClient.hpp
+        src/remote/IGrpcClientAdapter.hpp
+        src/remote/GrpcClientAdapter.hpp
+        src/remote/ClientAdapterUtils.hpp
         src/remote/GrpcResponse.hpp
         src/remote/IGrpcClientAdapter.hpp
         src/remote/model/ModelView.hpp
