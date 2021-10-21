@@ -45,7 +45,7 @@ struct ListMemosRequest
 {
     std::string uuid;
     MemoFilter searchFilter;
-    int resultPageSize;
+    int resultPageSize = 20;
     ModelView memoView;
     std::string pageToken;
 };
