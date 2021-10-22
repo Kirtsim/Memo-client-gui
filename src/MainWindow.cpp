@@ -4,7 +4,7 @@
 #include "remote/GrpcClientAdapter.hpp"
 #include "remote/model/ListMemos.hpp"
 #include "ui_MainWindow.h"
-#include <QStandardItem>
+#include <QListWIdgetItem>
 #include <QDateTime>
 
 MainWindow::MainWindow()
@@ -13,8 +13,7 @@ MainWindow::MainWindow()
 {
     ui_->setupUi(this);
     connect(ui_->refreshButton, &QPushButton::pressed, this, &MainWindow::fetchMemos);
-    ui_->memoListView->setModel(new QStandardItemModel);
-    auto selectionModel = ui_->memoListView->selectionModel();
+    auto selectionModel = ui_->memoList->selectionModel();
     connect(selectionModel, &QItemSelectionModel::selectionChanged, this, &MainWindow::processMemoSelection);
 }
 
@@ -33,15 +32,13 @@ void MainWindow::fetchMemos()
     if (response.ok())
     {
         const auto& responseData = response.body();
-        auto model = dynamic_cast<QStandardItemModel*>(ui_->memoListView->model());
-        model->clear();
-        memos_.clear();
+        ui_->memoList->clear();
+
         for (const auto& memo : responseData.memos())
         {
             const auto title = QString::fromStdString(memo->title());
             memos_[title] = memo;
-            auto item = new QStandardItem(title);
-            model->appendRow(item);
+            new QListWidgetItem(title, ui_->memoList);
         }
     }
 }
@@ -51,7 +48,7 @@ void MainWindow::processMemoSelection(const QItemSelection& selected, const QIte
     if (!selected.indexes().empty())
     {
         auto index = selected.indexes().front();
-        auto memoTitle = ui_->memoListView->model()->data(index).toString();
+        auto memoTitle = ui_->memoList->model()->data(index).toString();
         auto iter = memos_.find(memoTitle);
         if (iter != memos_.end() && iter.value())
         {
@@ -66,6 +63,6 @@ void MainWindow::displayMemo(const memo::model::Memo& memo)
     ui_->memoTitle->setText(QString::fromStdString(memo.title()));
     ui_->memoDescription->setText(QString::fromStdString(memo.description()));
     auto dateTime = QDateTime::fromMSecsSinceEpoch(static_cast<long long>(memo.timestamp()));
-    ui_->memoDate->setText(dateTime.toString("dd MMM yyyy  hh:mm:ss"));
+    ui_->date->setText(dateTime.toString("dd MMM yyyy  hh:mm:ss"));
 
 }
