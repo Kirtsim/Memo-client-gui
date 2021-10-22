@@ -216,20 +216,16 @@ namespace {
             filter.add_contains(keyword);
         for (const auto tagId: source.tagIds)
             filter.add_tagged_by(tagId);
-        if (source.timestampFrom != -1ul)
-            filter.mutable_creation_time()->set_start(source.timestampFrom);
-        if (source.timestampUntil != -1ul)
-            filter.mutable_creation_time()->set_end(source.timestampUntil);
+        filter.mutable_creation_time()->set_start(source.timestampFrom);
+        filter.mutable_creation_time()->set_end(source.timestampUntil);
     }
 
     void populateTagFilter(proto::TagFilter& filter, const remote::TagFilter& source)
     {
         filter.set_name_starts_with(source.namePrefix);
         filter.set_contains(source.nameContains);
-        if (source.timestampFrom != -1ul)
-            filter.mutable_creation_time()->set_start(source.timestampFrom);
-        if (source.timestampUntil != -1ul)
-            filter.mutable_creation_time()->set_end(source.timestampUntil);
+        filter.mutable_creation_time()->set_start(source.timestampFrom);
+        filter.mutable_creation_time()->set_end(source.timestampUntil);
         for (const int color : source.colors)
             filter.add_colours(color);
         for (const auto memoId : source.memoIds)
