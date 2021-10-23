@@ -150,11 +150,49 @@
             <pointsize>14</pointsize>
            </font>
           </property>
+          <property name="autoFillBackground">
+           <bool>false</bool>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::NoFrame</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Plain</enum>
+          </property>
           <property name="text">
            <string>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin ac tempus ligula, nec malesuada orci. Cras non nunc malesuada, dapibus turpis eu, dictum dolor. Nunc imperdiet turpis nisl, fermentum elementum velit maximus at. Curabitur non venenatis turpis. Phasellus risus nunc, pretium in nibh eget, viverra feugiat mi. Etiam ut ipsum vel ipsum iaculis molestie. Maecenas a iaculis tellus. Duis et lorem ut nibh egestas lacinia rhoncus at est. Integer vel ligula varius, ultricies erat sit amet, efficitur augue. In quis nibh in elit ullamcorper egestas vitae ac tellus.</string>
           </property>
           <property name="wordWrap">
            <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="verticalSpacer_3">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Fixed</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>10</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QLabel" name="tags">
+          <property name="font">
+           <font>
+            <pointsize>14</pointsize>
+            <bold>true</bold>
+           </font>
+          </property>
+          <property name="text">
+           <string>#Tag1  #Tag2  #Tag3</string>
           </property>
          </widget>
         </item>

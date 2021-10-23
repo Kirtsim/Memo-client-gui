@@ -240,6 +240,7 @@ namespace {
         {
             auto tag = ProtoToModel(iter->second);
             tags[iter->first] = std::make_shared<model::Tag>(std::move(tag));
+            iter++;
         }
         return tags;
     }

@@ -1,5 +1,6 @@
 #include "MainWindow.hpp"
 #include "model/Memo.hpp"
+#include "model/Tag.hpp"
 #include "remote/GrpcClient.hpp"
 #include "remote/GrpcClientAdapter.hpp"
 #include "remote/model/ListMemos.hpp"
@@ -64,5 +65,14 @@ void MainWindow::displayMemo(const memo::model::Memo& memo)
     ui_->memoDescription->setText(QString::fromStdString(memo.description()));
     auto dateTime = QDateTime::fromMSecsSinceEpoch(static_cast<long long>(memo.timestamp()));
     ui_->date->setText(dateTime.toString("dd MMM yyyy  hh:mm:ss"));
-
+    QStringList tagNames;
+    tagNames.reserve(static_cast<qsizetype>(memo.tags().size()));
+    for (const auto& tag : memo.tags())
+    {
+        if (tag)
+        {
+            tagNames << QString::fromStdString(tag->name());
+        }
+    }
+    ui_->tags->setText(tagNames.join("  "));
 }
