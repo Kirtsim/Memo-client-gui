@@ -63,7 +63,7 @@ void MainWindow::displayMemo(const memo::model::Memo& memo)
 {
     ui_->memoTitle->setText(QString::fromStdString(memo.title()));
     ui_->memoDescription->setText(QString::fromStdString(memo.description()));
-    auto dateTime = QDateTime::fromMSecsSinceEpoch(static_cast<long long>(memo.timestamp()));
+    auto dateTime = QDateTime::fromSecsSinceEpoch(static_cast<long long>(memo.timestamp()));
     ui_->date->setText(dateTime.toString("dd MMM yyyy  hh:mm:ss"));
     QStringList tagNames;
     tagNames.reserve(static_cast<qsizetype>(memo.tags().size()));
