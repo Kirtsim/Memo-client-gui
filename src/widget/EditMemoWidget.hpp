@@ -28,6 +28,9 @@ public:
 
     void setSelectedTags(const QStringList& tags);
 
+signals:
+    void titleChanged(const QString& newTitle);
+
 private slots:
     void addTags();
 

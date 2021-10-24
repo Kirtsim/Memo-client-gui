@@ -18,6 +18,7 @@ EditMemoWidget::EditMemoWidget(QWidget* parent)
     connect(ui_->removeButton, &QPushButton::pressed, this, &EditMemoWidget::removeTags);
     connect(ui_->availableTags, &QListWidget::itemSelectionChanged, this, &EditMemoWidget::updateButtonStates);
     connect(ui_->selectedTags, &QListWidget::itemSelectionChanged, this, &EditMemoWidget::updateButtonStates);
+    connect(ui_->title, &QLineEdit::textChanged, this, &EditMemoWidget::titleChanged);
     updateButtonStates();
 }
 
