@@ -12,6 +12,7 @@
 
 #include <QListWIdgetItem>
 #include <QDateTime>
+#include <QMessageBox>
 
 using TagVector = std::vector<std::shared_ptr<memo::model::Tag>>;
 
@@ -125,7 +126,7 @@ void MainWindow::newMemo()
         auto response = client.addMemo(request);
         if (!response.ok())
         {
-            // TODO: log and inform the user
+            QMessageBox::warning(this, tr("Server error."), tr("Memo could not be saved."));
             return;
         }
         memo->setId(response.body().addedMemoId());
