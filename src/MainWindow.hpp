@@ -6,6 +6,7 @@
 
 
 namespace memo::model { class Memo; }
+namespace memo::model { class Tag; }
 
 namespace Ui { class MainWindow; }
 
@@ -18,7 +19,9 @@ public:
 
 private slots:
     void fetchMemos();
+    void fetchTags();
     void processMemoSelection(const QItemSelection& selected, const QItemSelection& deselected);
+    void newMemo();
 
 private:
     void displayMemo(const memo::model::Memo& memo);
@@ -26,4 +29,5 @@ private:
 private:
     Ui::MainWindow* ui_;
     QMap<QString, std::shared_ptr<memo::model::Memo>> memos_;
+    QMap<QString, std::shared_ptr<memo::model::Tag>> tags_;
 };
