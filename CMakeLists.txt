@@ -45,6 +45,7 @@ target_sources(Memo_client_gui
         src/remote/model/RemoveTag.cpp
         src/widget/EditMemoWidget.cpp
         src/dialog/NewMemoDialog.cpp
+        src/manager/MemoCollection.cpp
 
         PUBLIC
         src/remote/IGrpcClient.hpp
@@ -66,6 +67,7 @@ target_sources(Memo_client_gui
         src/remote/model/RemoveTag.hpp
         src/widget/EditMemoWidget.hpp
         src/dialog/NewMemoDialog.hpp
+        src/manager/MemoCollection.hpp
         )
 target_link_libraries(Memo_client_gui
         Qt::Core
