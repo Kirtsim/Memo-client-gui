@@ -14,11 +14,15 @@
 #include <QDateTime>
 #include <QMessageBox>
 
+using namespace memo;
 using TagVector = std::vector<std::shared_ptr<memo::model::Tag>>;
 
 namespace {
-    std::string serverUrl() { return "127.0.0.1"; };
-    std::string serverPort() { return "8000"; };
+    std::string serverUrl() { return "127.0.0.1"; }
+
+    std::string serverPort() { return "8000"; }
+
+    std::unique_ptr<memo::IGrpcClientAdapter> CreateMemoClient();
 
     TagVector collectTags(const QMap<QString, std::shared_ptr<memo::model::Tag>>& tags, const QStringList& tagNames);
 }
@@ -26,38 +30,34 @@ namespace {
 MainWindow::MainWindow()
     : QMainWindow()
     , ui_(new Ui::MainWindow)
+    , memos_(std::make_unique<memo::MemoCollection>(std::move(CreateMemoClient())))
 {
     ui_->setupUi(this);
-    connect(ui_->refreshButton, &QPushButton::pressed, this, &MainWindow::fetchMemos);
     auto selectionModel = ui_->memoList->selectionModel();
+
     connect(selectionModel, &QItemSelectionModel::selectionChanged, this, &MainWindow::processMemoSelection);
     connect(ui_->newMemoButton, &QPushButton::pressed, this, &MainWindow::newMemo);
+    connect(ui_->refreshButton, &QPushButton::pressed, memos_.get(), &MemoCollection::listAll);
+    connect(memos_.get(), &MemoCollection::memoCacheCleared, this, [&]() { ui_->memoList->clear(); });
+    connect(memos_.get(), &MemoCollection::networkOperationFailed, this, [&](int operation) {
+        switch (toMemoOperation(operation))
+        {
+            case MemoOperation::kAdd: QMessageBox::warning(this, "Server error", "Unable to save memo."); break;
+            default: QMessageBox::warning(this, "Server error", "Network error occurred."); break;
+        }
+    });
+    connect(memos_.get(), &MemoCollection::memoAdded, this, [&](unsigned long id) {
+        if (auto newMemo = memos_->find(id))
+        {
+            const auto title = QString::fromStdString(newMemo->title());
+            new QListWidgetItem(title, ui_->memoList);
+        }
+    });
 }
 
 MainWindow::~MainWindow()
 {
     delete ui_;
-}
-
-void MainWindow::fetchMemos()
-{
-    memo::GrpcClientAdapter client(std::make_unique<memo::GrpcClient>(serverUrl(), serverPort()));
-    memo::remote::ListMemosRequest request;
-    request.uuid = "123-123-123-123-123";
-    auto response = client.listMemos(request);
-
-    if (response.ok())
-    {
-        const auto& responseData = response.body();
-        ui_->memoList->clear();
-
-        for (const auto& memo : responseData.memos())
-        {
-            const auto title = QString::fromStdString(memo->title());
-            memos_[title] = memo;
-            new QListWidgetItem(title, ui_->memoList);
-        }
-    }
 }
 
 void MainWindow::fetchTags()
@@ -86,11 +86,9 @@ void MainWindow::processMemoSelection(const QItemSelection& selected, const QIte
     if (!selected.indexes().empty())
     {
         auto index = selected.indexes().front();
-        auto memoTitle = ui_->memoList->model()->data(index).toString();
-        auto iter = memos_.find(memoTitle);
-        if (iter != memos_.end() && iter.value())
+        auto title = ui_->memoList->model()->data(index).toString().toStdString();
+        if (auto memo = memos_->find(title))
         {
-            const auto memo = iter.value();
             displayMemo(*memo);
         }
     }
@@ -105,7 +103,7 @@ void MainWindow::newMemo()
     auto& memoWidget = newMemoDialog.memoWidget();
     memoWidget.setAvailableTags(tagNames);
     connect(&memoWidget, &EditMemoWidget::titleChanged, this, [&](const QString& newTitle) {
-        const bool enableConfirmButton = !memos_.contains(newTitle);
+        const bool enableConfirmButton = !memos_->find(newTitle.toStdString());
         newMemoDialog.enableConfirmButton(enableConfirmButton);
     });
 
@@ -118,22 +116,7 @@ void MainWindow::newMemo()
         memo->setTimestamp(QDateTime::currentSecsSinceEpoch());
         memo->setTags(tags);
 
-        memo::remote::AddMemoRequest request;
-        request.uuid = "aaaa-bbbb-1111-2222-9999";
-        request.memo = memo;
-
-        memo::GrpcClientAdapter client(std::make_unique<memo::GrpcClient>(serverUrl(), serverPort()));
-        auto response = client.addMemo(request);
-        if (!response.ok())
-        {
-            QMessageBox::warning(this, tr("Server error."), tr("Memo could not be saved."));
-            return;
-        }
-        memo->setId(response.body().addedMemoId());
-
-        const auto title = QString::fromStdString(memo->title());
-        memos_[title] = memo;
-        new QListWidgetItem(title, ui_->memoList);
+        memos_->add(memo);
     }
 }
 
@@ -156,6 +139,14 @@ void MainWindow::displayMemo(const memo::model::Memo& memo)
 }
 
 namespace {
+
+    std::unique_ptr<memo::IGrpcClientAdapter> CreateMemoClient()
+    {
+        auto client = std::make_unique<memo::GrpcClient>(serverUrl(), serverPort());
+        auto clientAdapter = std::make_unique<memo::GrpcClientAdapter>(std::move(client));
+        return std::move(clientAdapter);
+    }
+
     TagVector collectTags(const QMap<QString, std::shared_ptr<memo::model::Tag>>& tags, const QStringList& tagNames)
     {
         TagVector resultTags;
