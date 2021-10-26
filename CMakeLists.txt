@@ -46,6 +46,7 @@ target_sources(Memo_client_gui
         src/widget/EditMemoWidget.cpp
         src/dialog/NewMemoDialog.cpp
         src/manager/MemoCollection.cpp
+        src/manager/MemoVault.cpp
 
         PUBLIC
         src/remote/IGrpcClient.hpp
@@ -68,6 +69,7 @@ target_sources(Memo_client_gui
         src/widget/EditMemoWidget.hpp
         src/dialog/NewMemoDialog.hpp
         src/manager/MemoCollection.hpp
+        src/manager/MemoVault.hpp
         )
 target_link_libraries(Memo_client_gui
         Qt::Core
