@@ -1,14 +1,21 @@
 #pragma once
 #include <QObject>
+#include <QMap>
+#include <QString>
+#include "remote/model/AddMemo.hpp"
+#include "remote/model/ListMemos.hpp"
+#include "remote/IGrpcClientAdapter.hpp"
 
 #include <string>
 #include <map>
 #include <memory>
 
 namespace memo {
-    class IGrpcClientAdapter;
-
 namespace model { class Memo; }
+
+    class IGrpcClientAdapter;
+    class MemoVault;
+    class WorkerThread;
 
 enum class MemoOperation
 {
@@ -48,10 +55,18 @@ public slots:
 
     bool remove(unsigned long memoId);
 
+private slots:
+    void onWorkerFinished(const QString& workId);
+
+private:
+    void processResponse(const GrpcResponse<remote::ListMemosResponse>& response);
+
+    void processResponse(const GrpcResponse<remote::AddMemoResponse>& response, const model::Memo& memo);
+
 private:
     std::unique_ptr<IGrpcClientAdapter> client_;
-    std::map<unsigned long, std::shared_ptr<model::Memo>> idToMemo_;
-    std::map<std::string, std::shared_ptr<model::Memo>> titleToMemo_;
+    std::unique_ptr<MemoVault> memoVault_;
+    QMap<QString, std::shared_ptr<WorkerThread>> workers_;
 };
 
 } // namespace memo
