@@ -12,10 +12,10 @@
 
 namespace memo {
 namespace model { class Memo; }
+namespace remote { class Worker; }
 
     class IGrpcClientAdapter;
     class MemoVault;
-    class WorkerThread;
 
 enum class MemoOperation
 {
@@ -61,12 +61,13 @@ private slots:
 private:
     void processResponse(const GrpcResponse<remote::ListMemosResponse>& response);
 
-    void processResponse(const GrpcResponse<remote::AddMemoResponse>& response, const model::Memo& memo);
+    void processResponse(const GrpcResponse<remote::AddMemoResponse>& response,
+                         const std::shared_ptr<model::Memo>& memo);
 
 private:
     std::unique_ptr<IGrpcClientAdapter> client_;
     std::unique_ptr<MemoVault> memoVault_;
-    QMap<QString, std::shared_ptr<WorkerThread>> workers_;
+    QMap<QString, std::shared_ptr<remote::Worker>> workers_;
 };
 
 } // namespace memo

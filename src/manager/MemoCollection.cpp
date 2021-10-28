@@ -3,104 +3,13 @@
 #include "remote/IGrpcClientAdapter.hpp"
 #include "remote/model/ListMemos.hpp"
 #include "remote/model/AddMemo.hpp"
+#include "remote/concurrency/QueryWorker.hpp"
+#include "remote/concurrency/CreationWorker.hpp"
 #include "model/Memo.hpp"
 
 #include <QtConcurrent/QtConcurrent>
 
 namespace memo {
-
-class WorkerThread : public QThread
-{
-   Q_OBJECT
-public:
-    WorkerThread(IGrpcClientAdapter& client, const QString& id)
-        : client_(client)
-        , id_(id)
-    {
-    }
-
-    virtual ~WorkerThread() override = default;
-
-    const QString& id() const
-    {
-       return id_;
-    }
-
-signals:
-    void resultReady(const QString& id);
-
-protected:
-    IGrpcClientAdapter& client()
-    {
-        return client_;
-    }
-
-private:
-    IGrpcClientAdapter& client_;
-    QString id_;
-};
-
-class ListAllTask : public WorkerThread
-{
-    Q_OBJECT
-public:
-    ListAllTask(IGrpcClientAdapter& client, const QString& id)
-        : WorkerThread(client, id)
-        , result_(false, {})
-    {
-    }
-
-    void run() override
-    {
-        remote::ListMemosRequest request;
-        request.uuid = "123-123-123-123-123";
-        result_ = client().listMemos(request);
-        emit resultReady(id());
-    }
-
-    const GrpcResponse<remote::ListMemosResponse>& result() const
-    {
-        return result_;
-    }
-
-private:
-    GrpcResponse<remote::ListMemosResponse> result_;
-};
-
-class AddMemoTask : public WorkerThread
-{
-Q_OBJECT
-public:
-    AddMemoTask(IGrpcClientAdapter& client, const QString& id, const std::shared_ptr<model::Memo>& memo)
-            : WorkerThread(client, id)
-            , result_(false, {})
-            , memo_(memo)
-    {
-    }
-
-    void run() override
-    {
-        remote::AddMemoRequest request;
-        request.uuid = "123-123-123-123-123";
-        request.memo = memo_;
-        result_ = client().addMemo(request);
-        emit resultReady(id());
-    }
-
-    const std::shared_ptr<model::Memo>& memo() const
-    {
-        return memo_;
-    }
-
-    const GrpcResponse<remote::AddMemoResponse>& result() const
-    {
-        return result_;
-    }
-
-private:
-    GrpcResponse<remote::AddMemoResponse> result_;
-    std::shared_ptr<model::Memo> memo_;
-};
 
 MemoCollection::MemoCollection(std::unique_ptr<IGrpcClientAdapter> client)
     : QObject()
@@ -113,12 +22,16 @@ MemoCollection::~MemoCollection() = default;
 
 bool MemoCollection::add(const std::shared_ptr<model::Memo>& memo)
 {
-    QString workId = "Add_" + QString::fromStdString(memo->title());
+    const QString workId = "Add_" + QString::fromStdString(memo->title());
     if (workers_.contains(workId))
         return true;
 
-    auto worker = std::make_shared<AddMemoTask>(*client_, workId, memo);
-    connect(worker.get(), &WorkerThread::resultReady, this, &MemoCollection::onWorkerFinished);
+    remote::AddMemoRequest request;
+    request.uuid = "123123-123123-123123-123123";
+    request.memo = std::make_shared<model::Memo>(*memo);
+
+    auto worker = std::make_shared<remote::CreateMemoWorker>(workId, *client_, request);
+    connect(worker.get(), &remote::CreateMemoWorker::workFinished, this, &MemoCollection::onWorkerFinished);
 
     workers_[workId] = worker;
     worker->run();
@@ -137,11 +50,16 @@ std::shared_ptr<model::Memo> MemoCollection::find(const std::string& title)
 
 MemoVector MemoCollection::listAll()
 {
-    const QString workId = "LIST_ALL";
-    auto worker = std::make_shared<ListAllTask>(*client_, workId);
+    const QString workId = "LIST_ALL_MEMOS";
+    remote::ListMemosRequest request;
+    request.uuid = "5555-5555-5555-5555";
+
+    auto worker = std::make_shared<remote::QueryMemoWorker>(workId, *client_, request);
+    if (workers_.contains(workId))
+        workers_[workId]->quit();
     workers_[workId] = worker;
 
-    connect(worker.get(), &ListAllTask::resultReady, this, &MemoCollection::onWorkerFinished);
+    connect(worker.get(), &remote::QueryMemoWorker::workFinished, this, &MemoCollection::onWorkerFinished);
     worker->start();
     return memoVault_->list();
 }
@@ -160,15 +78,18 @@ void MemoCollection::onWorkerFinished(const QString& workId)
     auto workerThread = iter.value();
     workers_.remove(workId);
 
-    if (workId == "LIST_ALL")
+    if (workId == "LIST_ALL_MEMOS")
     {
-        if (auto worker = std::dynamic_pointer_cast<ListAllTask>(workerThread))
-            processResponse(worker->result());
+        if (auto worker = std::dynamic_pointer_cast<remote::QueryMemoWorker>(workerThread))
+            processResponse(worker->response());
     }
     else if (workId.startsWith("Add_"))
     {
-        if (auto worker = std::dynamic_pointer_cast<AddMemoTask>(workerThread))
-            processResponse(worker->result(), *worker->memo());
+        if (auto worker = std::dynamic_pointer_cast<remote::CreateMemoWorker>(workerThread))
+        {
+            if (worker->request().memo)
+                processResponse(worker->response(), worker->request().memo);
+        }
     }
 }
 
@@ -188,11 +109,12 @@ void MemoCollection::processResponse(const GrpcResponse<remote::ListMemosRespons
     }
 }
 
-void MemoCollection::processResponse(const GrpcResponse<remote::AddMemoResponse>& response, const model::Memo& memo)
+void MemoCollection::processResponse(const GrpcResponse<remote::AddMemoResponse>& response,
+                                     const std::shared_ptr<model::Memo>& memo)
 {
-    if (response.ok())
+    if (response.ok() && memo)
     {
-        auto copy = std::make_shared<model::Memo>(memo);
+        auto copy = std::make_shared<model::Memo>(*memo);
         copy->setId(response.body().addedMemoId());
         memoVault_->add(copy);
         emit memoAdded(copy->id());
@@ -211,5 +133,3 @@ MemoOperation toMemoOperation(int value)
 }
 
 } // namespace memo
-
-#include "MemoCollection.moc"
