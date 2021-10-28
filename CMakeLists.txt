@@ -44,6 +44,10 @@ target_sources(Memo_client_gui
         src/remote/model/AddTag.cpp
         src/remote/model/UpdateTag.cpp
         src/remote/model/RemoveTag.cpp
+        src/remote/concurrency/QueryWorker.cpp
+        src/remote/concurrency/CreationWorker.cpp
+        src/remote/concurrency/UpdateWorker.cpp
+        src/remote/concurrency/RemovalWorker.cpp
         src/widget/EditMemoWidget.cpp
         src/dialog/NewMemoDialog.cpp
         src/manager/MemoCollection.cpp
@@ -57,6 +61,12 @@ target_sources(Memo_client_gui
         src/remote/ClientAdapterUtils.hpp
         src/remote/GrpcResponse.hpp
         src/remote/IGrpcClientAdapter.hpp
+        src/remote/concurrency/Worker.hpp
+        src/remote/concurrency/BaseWorker.hpp
+        src/remote/concurrency/QueryWorker.hpp
+        src/remote/concurrency/CreationWorker.hpp
+        src/remote/concurrency/UpdateWorker.hpp
+        src/remote/concurrency/RemovalWorker.hpp
         src/remote/model/ModelView.hpp
         src/remote/model/OperationStatus.hpp
         src/remote/model/ListMemos.hpp
