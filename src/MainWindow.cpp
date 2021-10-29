@@ -3,8 +3,6 @@
 #include "model/Tag.hpp"
 #include "remote/GrpcClient.hpp"
 #include "remote/GrpcClientAdapter.hpp"
-#include "remote/model/ListMemos.hpp"
-#include "remote/model/AddMemo.hpp"
 #include "remote/model/ListTags.hpp"
 #include "widget/EditMemoWidget.hpp"
 #include "dialog/NewMemoDialog.hpp"
