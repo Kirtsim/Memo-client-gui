@@ -4,6 +4,8 @@
 #include <QString>
 #include "remote/model/AddMemo.hpp"
 #include "remote/model/ListMemos.hpp"
+#include "remote/model/UpdateMemo.hpp"
+#include "remote/model/RemoveMemo.hpp"
 #include "remote/IGrpcClientAdapter.hpp"
 
 #include <string>
@@ -46,6 +48,8 @@ signals:
 
     void memoAdded(unsigned long memoId);
 
+    void memoUpdated(unsigned long memoId);
+
     void memoRemoved(unsigned long memoId);
 
     void networkOperationFailed(int operation);
@@ -62,6 +66,11 @@ private:
     void processResponse(const GrpcResponse<remote::ListMemosResponse>& response);
 
     void processResponse(const GrpcResponse<remote::AddMemoResponse>& response,
+                         const std::shared_ptr<model::Memo>& memo);
+
+    void processResponse(const GrpcResponse<remote::RemoveMemoResponse>& response);
+
+    void processResponse(const GrpcResponse<remote::UpdateMemoResponse>& response,
                          const std::shared_ptr<model::Memo>& memo);
 
 private:

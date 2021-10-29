@@ -3,8 +3,12 @@
 #include "remote/IGrpcClientAdapter.hpp"
 #include "remote/model/ListMemos.hpp"
 #include "remote/model/AddMemo.hpp"
+#include "remote/model/RemoveMemo.hpp"
+#include "remote/model/UpdateMemo.hpp"
 #include "remote/concurrency/QueryWorker.hpp"
 #include "remote/concurrency/CreationWorker.hpp"
+#include "remote/concurrency/UpdateWorker.hpp"
+#include "remote/concurrency/RemovalWorker.hpp"
 #include "model/Memo.hpp"
 
 #include <QtConcurrent/QtConcurrent>
@@ -22,19 +26,31 @@ MemoCollection::~MemoCollection() = default;
 
 bool MemoCollection::add(const std::shared_ptr<model::Memo>& memo)
 {
-    const QString workId = "Add_" + QString::fromStdString(memo->title());
+    QString workId;
+
+    std::shared_ptr<remote::Worker> worker;
+    if (memoVault_->find(memo->id()))
+    {
+        workId = "UPDATE_" + QString::fromStdString(memo->title());
+        remote::UpdateMemoRequest request;
+        request.uuid = "000100-190939-390239";
+        request.memo = memo;
+        worker = std::make_shared<remote::UpdateMemoWorker>(workId, *client_, request);
+    }
+    else
+    {
+        workId = "Add_" + QString::fromStdString(memo->title());
+        remote::AddMemoRequest request;
+        request.uuid = "123123-123123-123123-123123";
+        request.memo = std::make_shared<model::Memo>(*memo);
+        worker = std::make_shared<remote::CreateMemoWorker>(workId, *client_, request);
+    }
     if (workers_.contains(workId))
         return true;
-
-    remote::AddMemoRequest request;
-    request.uuid = "123123-123123-123123-123123";
-    request.memo = std::make_shared<model::Memo>(*memo);
-
-    auto worker = std::make_shared<remote::CreateMemoWorker>(workId, *client_, request);
     connect(worker.get(), &remote::CreateMemoWorker::workFinished, this, &MemoCollection::onWorkerFinished);
 
     workers_[workId] = worker;
-    worker->run();
+    worker->start();
     return true;
 }
 
@@ -66,7 +82,15 @@ MemoVector MemoCollection::listAll()
 
 bool MemoCollection::remove(unsigned long memoId)
 {
-    memoVault_->remove(memoId);
+    remote::RemoveMemoRequest request;
+    request.uuid = "123123-123123-12-3123";
+    request.memoIds.emplace_back(memoId);
+
+    auto worker = std::make_shared<remote::RemoveMemoWorker>("REMOVE_", *client_, request);
+    connect(worker.get(), &remote::RemoveMemoWorker::workFinished, this, &MemoCollection::onWorkerFinished);
+    workers_["REMOVE_"] = worker;
+
+    worker->start();
     return true;
 }
 
@@ -90,6 +114,17 @@ void MemoCollection::onWorkerFinished(const QString& workId)
             if (worker->request().memo)
                 processResponse(worker->response(), worker->request().memo);
         }
+    }
+    else if (workId.startsWith("REMOVE_"))
+    {
+        if (auto worker = std::dynamic_pointer_cast<remote::RemoveMemoWorker>(workerThread))
+            processResponse(worker->response());
+
+    }
+    else if (workId.startsWith("UPDATE_"))
+    {
+        if (auto worker = std::dynamic_pointer_cast<remote::UpdateMemoWorker>(workerThread))
+            processResponse(worker->response(), worker->request().memo);
     }
 }
 
@@ -120,6 +155,29 @@ void MemoCollection::processResponse(const GrpcResponse<remote::AddMemoResponse>
         emit memoAdded(copy->id());
     }
 }
+
+void MemoCollection::processResponse(const GrpcResponse<remote::RemoveMemoResponse>& response)
+{
+    if (response.ok())
+    {
+        for (const auto memoId : response.body().removedMemoIds())
+        {
+            memoVault_->remove(memoId);
+            emit memoRemoved(memoId);
+        }
+    }
+}
+
+void MemoCollection::processResponse(const GrpcResponse<remote::UpdateMemoResponse>& response,
+                                     const std::shared_ptr<model::Memo>& memo)
+{
+    if (response.ok() && response.body().operationStatus().type == remote::OperationStatus::kSuccess)
+    {
+        memoVault_->add(memo);
+        emit memoUpdated(memo->id());
+    }
+}
+
 
 MemoOperation toMemoOperation(int value)
 {
