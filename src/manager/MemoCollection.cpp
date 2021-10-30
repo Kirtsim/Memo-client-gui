@@ -28,14 +28,14 @@ bool MemoCollection::add(const std::shared_ptr<model::Memo>& memo)
 {
     QString workId;
 
-    std::shared_ptr<remote::Worker> worker;
+    remote::Worker* worker;
     if (memoVault_->find(memo->id()))
     {
         workId = "UPDATE_" + QString::fromStdString(memo->title());
         remote::UpdateMemoRequest request;
         request.uuid = "000100-190939-390239";
         request.memo = memo;
-        worker = std::make_shared<remote::UpdateMemoWorker>(workId, *client_, request);
+        worker = new remote::UpdateMemoWorker(workId, *client_, request);
     }
     else
     {
@@ -43,11 +43,12 @@ bool MemoCollection::add(const std::shared_ptr<model::Memo>& memo)
         remote::AddMemoRequest request;
         request.uuid = "123123-123123-123123-123123";
         request.memo = std::make_shared<model::Memo>(*memo);
-        worker = std::make_shared<remote::CreateMemoWorker>(workId, *client_, request);
+        worker = new remote::CreateMemoWorker(workId, *client_, request);
     }
     if (workers_.contains(workId))
         return true;
-    connect(worker.get(), &remote::CreateMemoWorker::workFinished, this, &MemoCollection::onWorkerFinished);
+    connect(worker, &remote::CreateMemoWorker::workFinished, this, &MemoCollection::onWorkerFinished);
+    connect(worker, &remote::Worker::finished, worker, &remote::Worker::deleteLater);
 
     workers_[workId] = worker;
     worker->start();
@@ -70,12 +71,13 @@ MemoVector MemoCollection::listAll()
     remote::ListMemosRequest request;
     request.uuid = "5555-5555-5555-5555";
 
-    auto worker = std::make_shared<remote::QueryMemoWorker>(workId, *client_, request);
+    auto worker = new remote::QueryMemoWorker(workId, *client_, request);
     if (workers_.contains(workId))
         workers_[workId]->quit();
     workers_[workId] = worker;
 
-    connect(worker.get(), &remote::QueryMemoWorker::workFinished, this, &MemoCollection::onWorkerFinished);
+    connect(worker, &remote::QueryMemoWorker::workFinished, this, &MemoCollection::onWorkerFinished);
+    connect(worker, &remote::Worker::finished, worker, &remote::Worker::deleteLater);
     worker->start();
     return memoVault_->list();
 }
@@ -86,8 +88,9 @@ bool MemoCollection::remove(unsigned long memoId)
     request.uuid = "123123-123123-12-3123";
     request.memoIds.emplace_back(memoId);
 
-    auto worker = std::make_shared<remote::RemoveMemoWorker>("REMOVE_", *client_, request);
-    connect(worker.get(), &remote::RemoveMemoWorker::workFinished, this, &MemoCollection::onWorkerFinished);
+    auto worker = new remote::RemoveMemoWorker("REMOVE_", *client_, request);
+    connect(worker, &remote::RemoveMemoWorker::workFinished, this, &MemoCollection::onWorkerFinished);
+    connect(worker, &remote::Worker::finished, worker, &remote::Worker::deleteLater);
     workers_["REMOVE_"] = worker;
 
     worker->start();
@@ -104,12 +107,12 @@ void MemoCollection::onWorkerFinished(const QString& workId)
 
     if (workId == "LIST_ALL_MEMOS")
     {
-        if (auto worker = std::dynamic_pointer_cast<remote::QueryMemoWorker>(workerThread))
+        if (auto worker = dynamic_cast<remote::QueryMemoWorker*>(workerThread))
             processResponse(worker->response());
     }
     else if (workId.startsWith("Add_"))
     {
-        if (auto worker = std::dynamic_pointer_cast<remote::CreateMemoWorker>(workerThread))
+        if (auto worker = dynamic_cast<remote::CreateMemoWorker*>(workerThread))
         {
             if (worker->request().memo)
                 processResponse(worker->response(), worker->request().memo);
@@ -117,13 +120,13 @@ void MemoCollection::onWorkerFinished(const QString& workId)
     }
     else if (workId.startsWith("REMOVE_"))
     {
-        if (auto worker = std::dynamic_pointer_cast<remote::RemoveMemoWorker>(workerThread))
+        if (auto worker = dynamic_cast<remote::RemoveMemoWorker*>(workerThread))
             processResponse(worker->response());
 
     }
     else if (workId.startsWith("UPDATE_"))
     {
-        if (auto worker = std::dynamic_pointer_cast<remote::UpdateMemoWorker>(workerThread))
+        if (auto worker = dynamic_cast<remote::UpdateMemoWorker*>(workerThread))
             processResponse(worker->response(), worker->request().memo);
     }
 }

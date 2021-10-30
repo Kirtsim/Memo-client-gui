@@ -76,7 +76,7 @@ private:
 private:
     std::unique_ptr<IGrpcClientAdapter> client_;
     std::unique_ptr<MemoVault> memoVault_;
-    QMap<QString, std::shared_ptr<remote::Worker>> workers_;
+    QMap<QString, remote::Worker*> workers_;
 };
 
 } // namespace memo
