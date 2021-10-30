@@ -34,8 +34,19 @@ MainWindow::MainWindow()
     auto selectionModel = ui_->memoList->selectionModel();
 
     connect(selectionModel, &QItemSelectionModel::selectionChanged, this, &MainWindow::processMemoSelection);
-    connect(ui_->newMemoButton, &QPushButton::pressed, this, &MainWindow::newMemo);
-    connect(ui_->refreshButton, &QPushButton::pressed, memos_.get(), &MemoCollection::listAll);
+    connect(ui_->newMemoButton, &QPushButton::clicked, this, &MainWindow::newMemo);
+    connect(ui_->refreshButton, &QPushButton::clicked, memos_.get(), &MemoCollection::listAll);
+    connect(ui_->deleteButton, &QPushButton::clicked, this, [&]() {
+         auto selected = ui_->memoList->selectedItems();
+         if (!selected.isEmpty())
+         {
+             auto rowItem = selected.front();
+             const auto memoTitle = rowItem->text();
+             auto memo = memos_->find(memoTitle.toStdString());
+             if (memo)
+                memos_->remove(memo->id());
+         }
+    });
     connect(memos_.get(), &MemoCollection::memoCacheCleared, this, [&]() { ui_->memoList->clear(); });
     connect(memos_.get(), &MemoCollection::networkOperationFailed, this, [&](int operation) {
         switch (toMemoOperation(operation))
@@ -48,7 +59,20 @@ MainWindow::MainWindow()
         if (auto newMemo = memos_->find(id))
         {
             const auto title = QString::fromStdString(newMemo->title());
-            new QListWidgetItem(title, ui_->memoList);
+            auto listItem = new QListWidgetItem(title, ui_->memoList);
+            listItem->setData(Qt::ItemDataRole::UserRole, QVariant(static_cast<qlonglong>(id)));
+        }
+    });
+
+    connect(memos_.get(), &MemoCollection::memoRemoved, this, [&](unsigned long id) {
+        for (int i = 0; i < ui_->memoList->count(); ++i)
+        {
+            const auto item = ui_->memoList->item(i);
+            if (item->data(Qt::ItemDataRole::UserRole).toULongLong() == id)
+            {
+                ui_->memoList->takeItem(i);
+                break;
+            }
         }
     });
 }
