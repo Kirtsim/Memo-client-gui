@@ -12,7 +12,8 @@ MemoVector MemoVault::list() const
     MemoVector result;
     result.reserve(idToMemo_.size());
 
-    for (const auto& [id, memo]: idToMemo_) {
+    for (const auto& [id, memo]: idToMemo_)
+    {
         auto copy = std::make_shared<model::Memo>(*memo);
         result.emplace_back(copy);
     }
@@ -31,30 +32,45 @@ std::shared_ptr<model::Memo> MemoVault::find(const std::string& title) const
     return _find(title);
 }
 
-void MemoVault::add(const std::shared_ptr<model::Memo>& memo)
-{
-    if (memo) {
-        const LockGuard guard(mutex_);
-        auto copy = std::make_shared<model::Memo>(*memo);
-        titleToMemo_[memo->title()] = copy;
-        idToMemo_[memo->id()] = copy;
-    }
-}
-
-void MemoVault::remove(unsigned long id)
+bool MemoVault::add(const std::shared_ptr<model::Memo>& memo)
 {
     const LockGuard guard(mutex_);
-    if (auto memo = _find(id)) {
-        _remove(*memo);
+    if (memo)
+    {
+        auto memoById = _find(memo->id());
+        auto memoByTitle = _find(memo->title());
+
+        if (memoById == memoByTitle)
+        {
+            auto copy = std::make_shared<model::Memo>(*memo);
+            titleToMemo_[memo->title()] = copy;
+            idToMemo_[memo->id()] = copy;
+            return true;
+        }
     }
+    return false;
 }
 
-void MemoVault::remove(const std::string& title)
+bool MemoVault::remove(unsigned long id)
 {
     const LockGuard guard(mutex_);
-    if (auto memo = _find(title)) {
+    if (auto memo = _find(id))
+    {
         _remove(*memo);
+        return true;
     }
+    return false;
+}
+
+bool MemoVault::remove(const std::string& title)
+{
+    const LockGuard guard(mutex_);
+    if (auto memo = _find(title))
+    {
+        _remove(*memo);
+        return true;
+    }
+    return false;
 }
 
 void MemoVault::clear()
