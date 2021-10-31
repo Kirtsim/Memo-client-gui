@@ -139,6 +139,9 @@ void MemoCollection::visit(const remote::UpdateMemoWorker& worker)
     if (response.ok() && responseStatus == remote::OperationStatus::kSuccess)
     {
         const auto memo = worker.request().memo;
+        const bool titleChanged = (nullptr == memoVault_->find(memo->title()));
+        if (titleChanged)
+            memoVault_->remove(memo->id());
         memoVault_->add(memo);
         emit memoUpdated(memo->id());
     }
