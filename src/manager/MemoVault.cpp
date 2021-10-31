@@ -6,6 +6,10 @@ namespace memo {
 
 using LockGuard = std::lock_guard<std::mutex>;
 
+namespace {
+    std::shared_ptr<model::Memo> CopyOf(const std::shared_ptr<model::Memo>& original);
+} // namespace
+
 MemoVector MemoVault::list() const
 {
     const LockGuard guard(mutex_);
@@ -13,23 +17,22 @@ MemoVector MemoVault::list() const
     result.reserve(idToMemo_.size());
 
     for (const auto& [id, memo]: idToMemo_)
-    {
-        auto copy = std::make_shared<model::Memo>(*memo);
-        result.emplace_back(copy);
-    }
+        result.emplace_back(CopyOf(memo));
     return result;
 }
 
 std::shared_ptr<model::Memo> MemoVault::find(unsigned long id) const
 {
     const LockGuard guard(mutex_);
-    return _find(id);
+    const auto memo = _find(id);
+    return CopyOf(memo);
 }
 
 std::shared_ptr<model::Memo> MemoVault::find(const std::string& title) const
 {
     const LockGuard guard(mutex_);
-    return _find(title);
+    const auto memo = _find(title);
+    return CopyOf(memo);
 }
 
 bool MemoVault::add(const std::shared_ptr<model::Memo>& memo)
@@ -42,7 +45,7 @@ bool MemoVault::add(const std::shared_ptr<model::Memo>& memo)
 
         if (memoById == memoByTitle)
         {
-            auto copy = std::make_shared<model::Memo>(*memo);
+            auto copy = CopyOf(memo);
             titleToMemo_[memo->title()] = copy;
             idToMemo_[memo->id()] = copy;
             return true;
@@ -97,5 +100,14 @@ std::shared_ptr<model::Memo> MemoVault::_find(const std::string& title) const
     auto iter = titleToMemo_.find(title);
     return iter != std::end(titleToMemo_) ? iter->second : nullptr;
 }
+
+namespace {
+    std::shared_ptr<model::Memo> CopyOf(const std::shared_ptr<model::Memo>& original)
+    {
+        if (original)
+            return std::make_shared<model::Memo>(*original);
+        return nullptr;
+    }
+} // namespace
 
 } // namespace memo
