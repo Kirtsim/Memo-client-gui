@@ -15,6 +15,8 @@ public:
     ~QueryMemoWorker() override;
 
     void run() override;
+
+    void accept(WorkerVisitor& visitor) override;
 };
 
 class QueryTagWorker :  public BaseWorker<ListTagsRequest, ListTagsResponse>
@@ -25,5 +27,7 @@ public:
     ~QueryTagWorker() override;
 
     void run() override;
+
+    void accept(WorkerVisitor& visitor) override;
 };
 } // namespace memo::remote

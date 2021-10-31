@@ -68,6 +68,7 @@ target_sources(Memo_client_gui
         src/remote/concurrency/CreationWorker.hpp
         src/remote/concurrency/UpdateWorker.hpp
         src/remote/concurrency/RemovalWorker.hpp
+        src/remote/concurrency/visitor/WorkerVisitor.hpp
         src/remote/model/ModelView.hpp
         src/remote/model/OperationStatus.hpp
         src/remote/model/ListMemos.hpp

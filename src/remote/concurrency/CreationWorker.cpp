@@ -1,4 +1,4 @@
-#include "CreationWorker.hpp"
+#include "remote/concurrency/CreationWorker.hpp"
 
 namespace memo::remote {
 
@@ -15,6 +15,12 @@ void CreateMemoWorker::run()
     workComplete(std::move(response));
 }
 
+void CreateMemoWorker::accept(WorkerVisitor& visitor)
+{
+    if (auto vis = dynamic_cast<MemoWorkerVisitor*>(&visitor))
+        vis->visit(*this);
+}
+
 CreateTagWorker::CreateTagWorker(const QString& id, IGrpcClientAdapter& client, AddTagRequest request)
     : BaseWorker(id, client, std::move(request))
 {
@@ -26,6 +32,12 @@ void CreateTagWorker::run()
 {
     auto response = client().addTag(request());
     workComplete(std::move(response));
+}
+
+void CreateTagWorker::accept(WorkerVisitor& visitor)
+{
+    if (auto vis = dynamic_cast<TagWorkerVisitor*>(&visitor))
+        vis->visit(*this);
 }
 
 } // namespace memo::remote

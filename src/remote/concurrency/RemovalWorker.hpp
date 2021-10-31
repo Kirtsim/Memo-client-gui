@@ -15,6 +15,8 @@ public:
     ~RemoveMemoWorker() override;
 
     void run() override;
+
+    void accept(WorkerVisitor& visitor) override;
 };
 
 class RemoveTagWorker : public BaseWorker<RemoveTagRequest, RemoveTagResponse>
@@ -25,5 +27,7 @@ public:
     ~RemoveTagWorker() override;
 
     void run() override;
+
+    void accept(WorkerVisitor& visitor) override;
 };
 } // namespace memo::remote

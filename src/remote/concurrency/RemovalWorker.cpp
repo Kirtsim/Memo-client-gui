@@ -16,6 +16,12 @@ void RemoveMemoWorker::run()
     workComplete(std::move(response));
 }
 
+void RemoveMemoWorker::accept(WorkerVisitor& visitor)
+{
+    if (auto vis = dynamic_cast<MemoWorkerVisitor*>(&visitor))
+        vis->visit(*this);
+}
+
 
 RemoveTagWorker::RemoveTagWorker(const QString& id, IGrpcClientAdapter& client, RemoveTagRequest request)
     : BaseWorker(id, client, std::move(request))
@@ -30,4 +36,9 @@ void RemoveTagWorker::run()
     workComplete(std::move(response));
 }
 
+void RemoveTagWorker::accept(WorkerVisitor& visitor)
+{
+    if (auto vis = dynamic_cast<TagWorkerVisitor*>(&visitor))
+        vis->visit(*this);
+}
 } // namespace memo::remote

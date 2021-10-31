@@ -16,6 +16,11 @@ void QueryMemoWorker::run()
     workComplete(std::move(response));
 }
 
+void QueryMemoWorker::accept(WorkerVisitor& visitor)
+{
+    if (auto vis = dynamic_cast<MemoWorkerVisitor*>(&visitor))
+        vis->visit(*this);
+}
 
 QueryTagWorker::QueryTagWorker(const QString& id, IGrpcClientAdapter& client, ListTagsRequest request)
     : BaseWorker(id, client, std::move(request))
@@ -30,4 +35,9 @@ void QueryTagWorker::run()
     workComplete(std::move(response));
 }
 
+void QueryTagWorker::accept(WorkerVisitor& visitor)
+{
+    if (auto vis = dynamic_cast<TagWorkerVisitor*>(&visitor))
+        vis->visit(*this);
+}
 } // namespace memo::remote

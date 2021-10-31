@@ -15,6 +15,8 @@ public:
     ~UpdateMemoWorker() override;
 
     void run() override;
+
+    void accept(WorkerVisitor& visitor) override;
 };
 
 class UpdateTagWorker : public BaseWorker<UpdateTagRequest, UpdateTagResponse>
@@ -25,5 +27,7 @@ public:
     ~UpdateTagWorker() override;
 
     void run() override;
+
+    void accept(WorkerVisitor& visitor) override;
 };
 } // namespace memo::remote
