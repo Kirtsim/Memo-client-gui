@@ -1,12 +1,9 @@
 #pragma once
+#include "remote/concurrency/visitor/WorkerVisitor.hpp"
+
 #include <QObject>
 #include <QMap>
 #include <QString>
-#include "remote/model/AddMemo.hpp"
-#include "remote/model/ListMemos.hpp"
-#include "remote/model/UpdateMemo.hpp"
-#include "remote/model/RemoveMemo.hpp"
-#include "remote/IGrpcClientAdapter.hpp"
 
 #include <string>
 #include <map>
@@ -29,19 +26,27 @@ enum class MemoOperation
 
 MemoOperation toMemoOperation(int value);
 
-class MemoCollection : public QObject
+class MemoCollection : public QObject, remote::MemoWorkerVisitor
 {
     Q_OBJECT
 public:
     explicit MemoCollection(std::unique_ptr<IGrpcClientAdapter> client);
 
-    ~MemoCollection();
+    ~MemoCollection() override;
 
     bool add(const std::shared_ptr<model::Memo>& memo);
 
     std::shared_ptr<model::Memo> find(unsigned long memoId);
 
     std::shared_ptr<model::Memo> find(const std::string& title);
+
+    void visit(const remote::QueryMemoWorker& worker) override;
+
+    void visit(const remote::CreateMemoWorker& worker) override;
+
+    void visit(const remote::UpdateMemoWorker& worker) override;
+
+    void visit(const remote::RemoveMemoWorker& worker) override;
 
 signals:
     void memoCacheCleared();
@@ -61,17 +66,6 @@ public slots:
 
 private slots:
     void onWorkerFinished(const QString& workId);
-
-private:
-    void processResponse(const GrpcResponse<remote::ListMemosResponse>& response);
-
-    void processResponse(const GrpcResponse<remote::AddMemoResponse>& response,
-                         const std::shared_ptr<model::Memo>& memo);
-
-    void processResponse(const GrpcResponse<remote::RemoveMemoResponse>& response);
-
-    void processResponse(const GrpcResponse<remote::UpdateMemoResponse>& response,
-                         const std::shared_ptr<model::Memo>& memo);
 
 private:
     std::unique_ptr<IGrpcClientAdapter> client_;
