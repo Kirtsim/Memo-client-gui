@@ -23,7 +23,17 @@ MemoCollection::MemoCollection(std::unique_ptr<IGrpcClientAdapter> client)
 {
 }
 
-MemoCollection::~MemoCollection() = default;
+MemoCollection::~MemoCollection()
+{
+    for (auto worker : workers_)
+    {
+        if (worker)
+        {
+            disconnect(worker, &remote::Worker::workFinished, this, &MemoCollection::onWorkerFinished);
+            worker->quit();
+        }
+    }
+}
 
 bool MemoCollection::add(const std::shared_ptr<model::Memo>& memo)
 {
@@ -99,7 +109,8 @@ void MemoCollection::onWorkerFinished(const QString& workId)
         return;
     auto worker = iter.value();
     workers_.remove(workId);
-    worker->accept(*this);
+    if (worker)
+        worker->accept(*this);
 }
 
 void MemoCollection::visit(const remote::QueryMemoWorker& worker)
