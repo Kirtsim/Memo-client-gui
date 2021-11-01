@@ -51,6 +51,7 @@ target_sources(Memo_client_gui
         src/widget/EditMemoWidget.cpp
         src/dialog/NewMemoDialog.cpp
         src/manager/MemoCollection.cpp
+        src/manager/TagCollection.cpp
         src/manager/MemoVault.cpp
         src/manager/TagVault.cpp
         src/tools/uuid.cpp
@@ -83,6 +84,7 @@ target_sources(Memo_client_gui
         src/widget/EditMemoWidget.hpp
         src/dialog/NewMemoDialog.hpp
         src/manager/MemoCollection.hpp
+        src/manager/TagCollection.hpp
         src/manager/MemoVault.hpp
         src/manager/TagVault.hpp
         src/tools/uuid.hpp
