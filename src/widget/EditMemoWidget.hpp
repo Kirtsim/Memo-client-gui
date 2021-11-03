@@ -31,6 +31,15 @@ public:
 signals:
     void titleChanged(const QString& newTitle);
 
+    void userSelectedTagsAdded(const QStringList& tags);
+
+    void userSelectedTagsRemoved(const QStringList& tags);
+
+public slots:
+    void clearAvailableTags();
+
+    void clearSelectedTags();
+
 private slots:
     void addTags();
 

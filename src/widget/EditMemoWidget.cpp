@@ -6,6 +6,8 @@
 namespace {
     void populateListWidget(QListWidget* widget, const QStringList& values);
 
+    void appendValue(QListWidget* widget, const QString& value);
+
     std::vector<int> indexesOfSelected(const QListWidget& listWidget);
 } // namespace
 
@@ -68,25 +70,53 @@ void EditMemoWidget::setSelectedTags(const QStringList& tags)
     populateListWidget(ui_->selectedTags, tags);
 }
 
+void EditMemoWidget::clearAvailableTags()
+{
+    ui_->availableTags->clear();
+}
+
+void EditMemoWidget::clearSelectedTags()
+{
+    ui_->selectedTags->clear();
+}
+
+void EditMemoWidget::addToSelectedTags(const QString& tag)
+{
+    appendValue(ui_->selectedTags, tag);
+}
+
+void EditMemoWidget::addToAvailableTags(const QString& tag)
+{
+    appendValue(ui_->availableTags, tag);
+}
+
 void EditMemoWidget::addTags()
 {
+    QStringList addedTags;
     const auto indexes = indexesOfSelected(*ui_->availableTags);
     for (int i = static_cast<int>(indexes.size() - 1); i >= 0; --i)
     {
         auto item = ui_->availableTags->takeItem(indexes[i]);
         ui_->selectedTags->addItem(item);
+        addedTags << item->text();
     }
+
+    emit userSelectedTagsAdded(addedTags);
     updateButtonStates();
 }
 
 void EditMemoWidget::removeTags()
 {
+    QStringList removedTags;
     const auto indexes = indexesOfSelected(*ui_->selectedTags);
     for (int i = static_cast<int>(indexes.size() - 1); i >= 0; --i)
     {
         auto item = ui_->selectedTags->takeItem(indexes[i]);
         ui_->availableTags->addItem(item);
+        removedTags << item->text();
     }
+
+    emit userSelectedTagsRemoved(removedTags);
     updateButtonStates();
 }
 
@@ -102,9 +132,12 @@ namespace {
     void populateListWidget(QListWidget* widget, const QStringList& values)
     {
         for (const auto& value : values)
-        {
-            new QListWidgetItem(value, widget);
-        }
+            appendValue(widget, value);
+    }
+
+    void appendValue(QListWidget* widget, const QString& value)
+    {
+        new QListWidgetItem(value, widget);
     }
 
     std::vector<int> indexesOfSelected(const QListWidget& listWidget)
