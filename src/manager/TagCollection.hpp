@@ -5,6 +5,7 @@
 
 #include <QObject>
 #include <QString>
+#include <QVector>
 #include <QMap>
 
 namespace memo {
@@ -41,6 +42,8 @@ signals:
     void tagCacheCleared();
 
     void tagAdded(unsigned long tagId);
+
+    void tagsAdded(const QVector<qulonglong>& tagIds);
 
     void tagUpdated(unsigned long tagId);
 

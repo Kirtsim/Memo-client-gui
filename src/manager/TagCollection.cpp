@@ -113,11 +113,14 @@ void TagCollection::visit(const remote::QueryTagWorker& worker)
         tagVault_->clear();
         emit tagCacheCleared();
 
+        QVector<qulonglong> ids;
         for (const auto& tag : response.body().tags())
         {
             tagVault_->add(tag);
+            ids << tag->id();
             emit tagAdded(tag->id());
         }
+        emit tagsAdded(ids);
     }
 }
 
