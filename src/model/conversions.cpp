@@ -9,6 +9,13 @@ proto::Memo ModelToProto(const model::Memo& memo)
     result.set_title(memo.title());
     result.set_description(memo.description());
     result.set_timestamp(memo.timestamp());
+    for (const auto& tag : memo.tags())
+    {
+        if (tag)
+        {
+            result.add_tag_ids(tag->id());
+        }
+    }
     return result;
 }
 
