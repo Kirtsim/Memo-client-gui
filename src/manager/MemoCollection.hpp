@@ -36,9 +36,9 @@ public:
 
     bool add(const std::shared_ptr<model::Memo>& memo);
 
-    std::shared_ptr<model::Memo> find(unsigned long memoId);
+    std::shared_ptr<model::Memo> find(unsigned long memoId) const;
 
-    std::shared_ptr<model::Memo> find(const std::string& title);
+    std::shared_ptr<model::Memo> find(const std::string& title) const;
 
     void visit(const remote::QueryMemoWorker& worker) override;
 

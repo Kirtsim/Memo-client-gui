@@ -62,12 +62,12 @@ bool MemoCollection::add(const std::shared_ptr<model::Memo>& memo)
     return true;
 }
 
-std::shared_ptr<model::Memo> MemoCollection::find(unsigned long memoId)
+std::shared_ptr<model::Memo> MemoCollection::find(unsigned long memoId) const
 {
     return memoVault_->find(memoId);
 }
 
-std::shared_ptr<model::Memo> MemoCollection::find(const std::string& title)
+std::shared_ptr<model::Memo> MemoCollection::find(const std::string& title) const
 {
     return memoVault_->find(title);
 }

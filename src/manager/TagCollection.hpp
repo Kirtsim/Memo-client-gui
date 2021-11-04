@@ -26,9 +26,9 @@ public:
 
     bool add(const std::shared_ptr<model::Tag>& tag);
 
-    std::shared_ptr<model::Tag> find(unsigned long tagId);
+    std::shared_ptr<model::Tag> find(unsigned long tagId) const;
 
-    std::shared_ptr<model::Tag> find(const std::string& name);
+    std::shared_ptr<model::Tag> find(const std::string& name) const;
 
     void visit(const remote::QueryTagWorker& worker) override;
 

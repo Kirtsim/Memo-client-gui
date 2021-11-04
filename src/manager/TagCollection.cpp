@@ -48,12 +48,12 @@ std::vector<std::shared_ptr<model::Tag>> TagCollection::listAll()
     return tagVault_->list();
 }
 
-std::shared_ptr<model::Tag> TagCollection::find(unsigned long tagId)
+std::shared_ptr<model::Tag> TagCollection::find(unsigned long tagId) const
 {
     return tagVault_->find(tagId);
 }
 
-std::shared_ptr<model::Tag> TagCollection::find(const std::string& name)
+std::shared_ptr<model::Tag> TagCollection::find(const std::string& name) const
 {
     return tagVault_->find(name);
 }
