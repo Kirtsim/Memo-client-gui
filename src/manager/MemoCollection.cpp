@@ -134,7 +134,7 @@ void MemoCollection::visit(const remote::CreateMemoWorker& worker)
 {
     const auto& response = worker.response();
     const auto memo = worker.request().memo;
-    if (response.ok() && memo)
+    if (response.ok() && response.body().operationStatus().type == remote::OperationStatus::kSuccess)
     {
         auto copy = std::make_shared<model::Memo>(*memo);
         copy->setId(response.body().addedMemoId());
@@ -161,7 +161,7 @@ void MemoCollection::visit(const remote::UpdateMemoWorker& worker)
 void MemoCollection::visit(const remote::RemoveMemoWorker& worker)
 {
     const auto& response = worker.response();
-    if (response.ok())
+    if (response.ok() && response.body().operationStatus().type == remote::OperationStatus::kSuccess)
     {
         const auto& removedMemoIds = response.body().removedMemoIds();
         for (const auto memoId : removedMemoIds)
