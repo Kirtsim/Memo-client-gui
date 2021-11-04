@@ -80,16 +80,6 @@ void EditMemoWidget::clearSelectedTags()
     ui_->selectedTags->clear();
 }
 
-void EditMemoWidget::addToSelectedTags(const QString& tag)
-{
-    appendValue(ui_->selectedTags, tag);
-}
-
-void EditMemoWidget::addToAvailableTags(const QString& tag)
-{
-    appendValue(ui_->availableTags, tag);
-}
-
 void EditMemoWidget::addTags()
 {
     QStringList addedTags;
