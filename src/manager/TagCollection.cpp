@@ -18,6 +18,7 @@ namespace memo {
 TagCollection::TagCollection(std::unique_ptr<IGrpcClientAdapter> client)
     : QObject()
     , client_(std::move(client))
+    , tagVault_(std::make_unique<TagVault>())
 {
 }
 
