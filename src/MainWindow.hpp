@@ -1,12 +1,12 @@
 #pragma once
 #include "manager/MemoCollection.hpp"
+#include "manager/TagCollection.hpp"
 #include <QMainWindow>
 #include <QMap>
 #include <QItemSelection>
 #include <memory>
 
 
-namespace memo { class MemoCollection; }
 namespace memo { class IGrpcClientAdapter; }
 
 namespace memo::model { class Memo; }
@@ -22,7 +22,6 @@ public:
     ~MainWindow() override;
 
 private slots:
-    void fetchTags();
     void processMemoSelection(const QItemSelection& selected, const QItemSelection& deselected);
     void newMemo();
 
@@ -32,5 +31,5 @@ private:
 private:
     Ui::MainWindow* ui_;
     std::shared_ptr<memo::MemoCollection> memos_;
-    QMap<QString, std::shared_ptr<memo::model::Tag>> tags_;
+    std::shared_ptr<memo::TagCollection> tags_;
 };

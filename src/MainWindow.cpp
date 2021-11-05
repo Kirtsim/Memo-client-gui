@@ -13,22 +13,24 @@
 #include <QMessageBox>
 
 using namespace memo;
-using TagVector = std::vector<std::shared_ptr<memo::model::Tag>>;
 
 namespace {
+    using TagVector = std::vector<std::shared_ptr<memo::model::Tag>>;
+
     std::string serverUrl() { return "127.0.0.1"; }
 
     std::string serverPort() { return "8000"; }
 
     std::unique_ptr<memo::IGrpcClientAdapter> CreateMemoClient();
 
-    TagVector collectTags(const QMap<QString, std::shared_ptr<memo::model::Tag>>& tags, const QStringList& tagNames);
+    TagVector collectTags(const TagCollection& tags, const QStringList& tagNames);
 }
 
 MainWindow::MainWindow()
     : QMainWindow()
     , ui_(new Ui::MainWindow)
-    , memos_(std::make_unique<memo::MemoCollection>(std::move(CreateMemoClient())))
+    , memos_(std::make_shared<memo::MemoCollection>(std::move(CreateMemoClient())))
+    , tags_(std::make_shared<memo::TagCollection>(std::move(CreateMemoClient())))
 {
     ui_->setupUi(this);
     auto selectionModel = ui_->memoList->selectionModel();
@@ -82,27 +84,6 @@ MainWindow::~MainWindow()
     delete ui_;
 }
 
-void MainWindow::fetchTags()
-{
-    memo::GrpcClientAdapter client(std::make_unique<memo::GrpcClient>(serverUrl(), serverPort()));
-    memo::remote::ListTagsRequest request;
-    request.uuid = "5555-5555-1111-3333-2222";
-    const auto response = client.listTags(request);
-    if (!response.ok())
-    {
-        // TODO: notify the user or log
-        return;
-    }
-    tags_.clear();
-    for (const auto& tag : response.body().tags())
-    {
-        if (tag)
-        {
-            tags_[QString::fromStdString(tag->name())] = tag;
-        }
-    }
-}
-
 void MainWindow::processMemoSelection(const QItemSelection& selected, const QItemSelection& deselected)
 {
     if (!selected.indexes().empty())
@@ -118,20 +99,12 @@ void MainWindow::processMemoSelection(const QItemSelection& selected, const QIte
 
 void MainWindow::newMemo()
 {
-    fetchTags();
-    QStringList tagNames = tags_.keys();
-
-    NewMemoDialog newMemoDialog(this);
-    auto& memoWidget = newMemoDialog.memoWidget();
-    memoWidget.setAvailableTags(tagNames);
-    connect(&memoWidget, &EditMemoWidget::titleChanged, this, [&](const QString& newTitle) {
-        const bool enableConfirmButton = !memos_->find(newTitle.toStdString());
-        newMemoDialog.enableConfirmButton(enableConfirmButton);
-    });
+    NewMemoDialog newMemoDialog(this, memos_, tags_);
 
     if (newMemoDialog.exec() == QDialog::Accepted)
     {
-        auto tags = collectTags(tags_, memoWidget.selectedTags());
+        auto& memoWidget = newMemoDialog.memoWidget();
+        auto tags = collectTags(*tags_, memoWidget.selectedTags());
         auto memo = std::make_shared<memo::model::Memo>();
         memo->setTitle(memoWidget.title().toStdString());
         memo->setDescription(memoWidget.description().toStdString());
@@ -169,15 +142,14 @@ namespace {
         return std::move(clientAdapter);
     }
 
-    TagVector collectTags(const QMap<QString, std::shared_ptr<memo::model::Tag>>& tags, const QStringList& tagNames)
+    TagVector collectTags(const TagCollection& tags, const QStringList& tagNames)
     {
         TagVector resultTags;
         for (const auto& tagName : tagNames)
         {
-            auto iter = tags.find(tagName);
-            if (iter != tags.end() && iter.value())
+            auto tag = tags.find(tagName.toStdString());
+            if (tag)
             {
-                auto tag = iter.value();
                 resultTags.emplace_back(tag);
             }
         }
