@@ -11,67 +11,38 @@
 NewMemoDialog::NewMemoDialog(QWidget* parent,
                              const std::shared_ptr<memo::MemoCollection>& memos,
                              const std::shared_ptr<memo::TagCollection>& tags)
-    : QDialog(parent)
-    , memoWidget_(std::make_unique<EditMemoWidget>())
-    , cancelButton_(std::make_unique<QPushButton>("Cancel"))
-    , confirmButton_(std::make_unique<QPushButton>("Confirm"))
-    , memos_(memos)
-    , tags_(tags)
+    : BaseMemoDialog(memos, tags, parent)
 {
-    auto buttonLayout = new QHBoxLayout();
-    auto horizontalSpacer = new QSpacerItem(0, 1, QSizePolicy::Expanding, QSizePolicy::Fixed);
-    buttonLayout->addItem(horizontalSpacer);
-    buttonLayout->addWidget(cancelButton_.get());
-    buttonLayout->addWidget(confirmButton_.get());
-
-    auto baseLayout = new QVBoxLayout();
-    this->setLayout(baseLayout);
-    baseLayout->addWidget(memoWidget_.get());
-    baseLayout->addLayout(buttonLayout);
-
-    connect(cancelButton_.get(), &QPushButton::clicked, this, [&]() { QDialog::done(QDialog::Rejected); });
-    connect(confirmButton_.get(), &QPushButton::clicked, this, [&]() { QDialog::done(QDialog::Accepted); });
-
-    connect(memoWidget_.get(), &EditMemoWidget::userSelectedTagsAdded, this, [&](const QStringList& tagNames) {
+    auto& tags_ = BaseMemoDialog::tags();
+    auto& memos_ = BaseMemoDialog::memos();
+    auto& memoWidget = BaseMemoDialog::memoWidget();
+    auto& selectedTags = BaseMemoDialog::selectedTags();
+    connect(&memoWidget, &EditMemoWidget::userSelectedTagsAdded, this, [&](const QStringList& tagNames) {
         for (const auto& tagName : tagNames)
         {
-            auto tag = tags_->find(tagName.toStdString());
-            if (tag)
-                selectedTags_.add(tag);
+            if (auto tag = tags_.find(tagName.toStdString()))
+            {
+                selectedTags.add(tag);
+            }
         }
     });
-    connect(memoWidget_.get(), &EditMemoWidget::userSelectedTagsRemoved, this, [&](const QStringList& tagNames) {
+    connect(&memoWidget, &EditMemoWidget::userSelectedTagsRemoved, this, [&](const QStringList& tagNames) {
         for (const auto& tagName : tagNames)
-            selectedTags_.remove(tagName.toStdString());
+            selectedTags.remove(tagName.toStdString());
     });
-    connect(memoWidget_.get(), &EditMemoWidget::titleChanged, this, [&](const QString& newTitle) {
-        const bool enableConfirmButton = !memos_->find(newTitle.toStdString());
-        this->enableConfirmButton(enableConfirmButton);
+    connect(&memoWidget, &EditMemoWidget::titleChanged, this, [&](const QString& newTitle) {
+        const bool enableConfirmButton = !memos_.find(newTitle.toStdString());
+        setConfirmButtonEnabled(enableConfirmButton);
     });
 
-    connect(tags_.get(), &memo::TagCollection::tagCacheCleared, memoWidget_.get(), &EditMemoWidget::clearAvailableTags);
-    connect(tags_.get(), &memo::TagCollection::tagCacheCleared, memoWidget_.get(), &EditMemoWidget::clearSelectedTags);
-    connect(tags_.get(), &memo::TagCollection::tagsAdded, this, &NewMemoDialog::splitNewTags);
+    connect(&tags_, &memo::TagCollection::tagCacheCleared, &memoWidget, &EditMemoWidget::clearAvailableTags);
+    connect(&tags_, &memo::TagCollection::tagCacheCleared, &memoWidget, &EditMemoWidget::clearSelectedTags);
+    connect(&tags_, &memo::TagCollection::tagsAdded, this, &NewMemoDialog::splitNewTags);
 
-    tags_->listAll();
+    BaseMemoDialog::tags().listAll();
 }
 
 NewMemoDialog::~NewMemoDialog() = default;
-
-const EditMemoWidget& NewMemoDialog::memoWidget() const
-{
-    return *memoWidget_;
-}
-
-EditMemoWidget& NewMemoDialog::memoWidget()
-{
-    return *memoWidget_;
-}
-
-void NewMemoDialog::enableConfirmButton(bool enable)
-{
-    confirmButton_->setEnabled(enable);
-}
 
 void NewMemoDialog::splitNewTags(const QVector<qulonglong>& tagIds)
 {
@@ -79,15 +50,15 @@ void NewMemoDialog::splitNewTags(const QVector<qulonglong>& tagIds)
     QStringList availableTagNames;
     for (const auto id : tagIds)
     {
-        if (auto tag = tags_->find(id))
+        if (auto tag = tags().find(id))
         {
             const auto name = QString::fromStdString(tag->name());
-            if (selectedTags_.find(id))
+            if (selectedTags().find(id))
                 selectedTagNames << name;
             else
                 availableTagNames << name;
         }
     }
-    memoWidget_->setAvailableTags(availableTagNames);
-    memoWidget_->setSelectedTags(selectedTagNames);
+    memoWidget().setAvailableTags(availableTagNames);
+    memoWidget().setSelectedTags(selectedTagNames);
 }
