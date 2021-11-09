@@ -17,7 +17,7 @@ public:
                    const std::shared_ptr<memo::TagCollection>& tags,
                    QWidget* parent=nullptr);
 
-    ~BaseMemoDialog() override;
+    ~BaseMemoDialog() override = 0;
 
     EditMemoWidget& memoWidget();
 
