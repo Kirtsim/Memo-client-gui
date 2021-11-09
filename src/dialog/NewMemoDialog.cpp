@@ -14,29 +14,6 @@ NewMemoDialog::NewMemoDialog(QWidget* parent,
     : BaseMemoDialog(memos, tags, parent)
 {
     auto& tags_ = BaseMemoDialog::tags();
-    auto& memos_ = BaseMemoDialog::memos();
-    auto& memoWidget = BaseMemoDialog::memoWidget();
-    auto& selectedTags = BaseMemoDialog::selectedTags();
-    connect(&memoWidget, &EditMemoWidget::userSelectedTagsAdded, this, [&](const QStringList& tagNames) {
-        for (const auto& tagName : tagNames)
-        {
-            if (auto tag = tags_.find(tagName.toStdString()))
-            {
-                selectedTags.add(tag);
-            }
-        }
-    });
-    connect(&memoWidget, &EditMemoWidget::userSelectedTagsRemoved, this, [&](const QStringList& tagNames) {
-        for (const auto& tagName : tagNames)
-            selectedTags.remove(tagName.toStdString());
-    });
-    connect(&memoWidget, &EditMemoWidget::titleChanged, this, [&](const QString& newTitle) {
-        const bool enableConfirmButton = !memos_.find(newTitle.toStdString());
-        setConfirmButtonEnabled(enableConfirmButton);
-    });
-
-    connect(&tags_, &memo::TagCollection::tagCacheCleared, &memoWidget, &EditMemoWidget::clearAvailableTags);
-    connect(&tags_, &memo::TagCollection::tagCacheCleared, &memoWidget, &EditMemoWidget::clearSelectedTags);
     connect(&tags_, &memo::TagCollection::tagsAdded, this, &NewMemoDialog::splitNewTags);
 
     BaseMemoDialog::tags().listAll();

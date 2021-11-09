@@ -4,7 +4,6 @@
 #include "manager/TagCollection.hpp"
 
 #include <QHBoxLayout>
-#include <QVBoxLayout>
 #include <QSpacerItem>
 #include <QPushButton>
 
@@ -29,11 +28,16 @@ BaseMemoDialog::BaseMemoDialog(const std::shared_ptr<memo::MemoCollection>& memo
     baseLayout->addLayout(buttonLayout);
 
     connect(cancelButton_.get(), &QPushButton::clicked, this, [&]() { QDialog::done(QDialog::Rejected); });
-    connect(confirmButton_.get(), &QPushButton::clicked, this, [&]()
-    {
-        if (onConfirmButtonClicked())
-            QDialog::done(QDialog::Accepted);
-    });
+    connect(confirmButton_.get(), &QPushButton::clicked, this, &BaseMemoDialog::confirmButtonClicked);
+
+    using EMW = EditMemoWidget;
+    connect(memoWidget_.get(), &EMW::userSelectedTagsAdded, this, &BaseMemoDialog::userAddedToSelectedTagsList);
+    connect(memoWidget_.get(), &EMW::userSelectedTagsRemoved, this, &BaseMemoDialog::userRemovedFromSelectedTagsList);
+    connect(memoWidget_.get(), &EMW::titleChanged, this, &BaseMemoDialog::memoTitleChanged);
+
+    connect(tags_.get(), &memo::TagCollection::tagCacheCleared, memoWidget_.get(), &EMW::clearAvailableTags);
+    connect(tags_.get(), &memo::TagCollection::tagCacheCleared, memoWidget_.get(), &EMW::clearSelectedTags);
+    //connect(tags_.get(), &memo::TagCollection::tagsAdded, this, &NewMemoDialog::splitNewTags);
 }
 
 BaseMemoDialog::~BaseMemoDialog() = default;
@@ -86,4 +90,33 @@ void BaseMemoDialog::setConfirmButtonEnabled(bool enable)
 bool BaseMemoDialog::onConfirmButtonClicked()
 {
     return true;
+}
+
+void BaseMemoDialog::confirmButtonClicked()
+{
+    if (onConfirmButtonClicked())
+        QDialog::done(QDialog::Accepted);
+}
+
+void BaseMemoDialog::userAddedToSelectedTagsList(const QStringList& tags)
+{
+    for (const auto& tagName : tags)
+    {
+        if (auto tag = tags_->find(tagName.toStdString()))
+        {
+            selectedTags_.add(tag);
+        }
+    }
+}
+
+void BaseMemoDialog::userRemovedFromSelectedTagsList(const QStringList& tags)
+{
+    for (const auto& tagName : tags)
+        selectedTags_.remove(tagName.toStdString());
+}
+
+void BaseMemoDialog::memoTitleChanged(const QString& newTitle)
+{
+    const bool enableConfirmButton = !memos_->find(newTitle.toStdString());
+    setConfirmButtonEnabled(enableConfirmButton);
 }

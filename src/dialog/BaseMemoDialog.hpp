@@ -43,6 +43,15 @@ protected:
 
     virtual bool onConfirmButtonClicked();
 
+private slots:
+    void confirmButtonClicked();
+
+    void userAddedToSelectedTagsList(const QStringList& tags);
+
+    void userRemovedFromSelectedTagsList(const QStringList& tags);
+
+    void memoTitleChanged(const QString& newTitle);
+
 private:
     std::unique_ptr<EditMemoWidget> memoWidget_;
     std::unique_ptr<QPushButton> cancelButton_;
