@@ -49,8 +49,7 @@ target_sources(Memo_client_gui
         src/remote/concurrency/UpdateWorker.cpp
         src/remote/concurrency/RemovalWorker.cpp
         src/widget/EditMemoWidget.cpp
-        src/dialog/NewMemoDialog.cpp
-        src/dialog/BaseMemoDialog.cpp
+        src/dialog/EditMemoDialog.cpp
         src/manager/MemoCollection.cpp
         src/manager/TagCollection.cpp
         src/manager/MemoVault.cpp
@@ -83,8 +82,7 @@ target_sources(Memo_client_gui
         src/remote/model/UpdateTag.hpp
         src/remote/model/RemoveTag.hpp
         src/widget/EditMemoWidget.hpp
-        src/dialog/NewMemoDialog.hpp
-        src/dialog/BaseMemoDialog.hpp
+        src/dialog/EditMemoDialog.hpp
         src/manager/MemoCollection.hpp
         src/manager/TagCollection.hpp
         src/manager/MemoVault.hpp

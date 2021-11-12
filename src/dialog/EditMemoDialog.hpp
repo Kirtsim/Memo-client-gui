@@ -6,51 +6,34 @@
 
 namespace memo { class MemoCollection; }
 namespace memo { class TagCollection; }
+namespace memo::model { class Memo; }
 class EditMemoWidget;
 class QPushButton;
 
-class BaseMemoDialog : public QDialog
+class EditMemoDialog : public QDialog
 {
     Q_OBJECT
 public:
-    BaseMemoDialog(const std::shared_ptr<memo::MemoCollection>& memos,
+    EditMemoDialog(const std::shared_ptr<memo::MemoCollection>& memos,
                    const std::shared_ptr<memo::TagCollection>& tags,
                    QWidget* parent=nullptr);
 
-    ~BaseMemoDialog() override = 0;
+    ~EditMemoDialog() override;
 
     EditMemoWidget& memoWidget();
 
     const EditMemoWidget& memoWidget() const;
 
-protected slots:
-
-protected:
-
-    memo::MemoCollection& memos();
-
-    const memo::MemoCollection& memos() const;
-
-    memo::TagCollection& tags();
-
-    const memo::TagCollection& tags() const;
-
-    memo::TagVault& selectedTags();
-
-    const memo::TagVault& selectedTags() const;
-
-    void setConfirmButtonEnabled(bool enable);
-
-    virtual bool onConfirmButtonClicked();
+    std::shared_ptr<memo::model::Memo> constructMemo();
 
 private slots:
-    void confirmButtonClicked();
-
     void userAddedToSelectedTagsList(const QStringList& tags);
 
     void userRemovedFromSelectedTagsList(const QStringList& tags);
 
     void memoTitleChanged(const QString& newTitle);
+
+    void splitNewTags(const QVector<qulonglong>& tagIds);
 
 private:
     std::unique_ptr<EditMemoWidget> memoWidget_;

@@ -5,7 +5,7 @@
 #include "remote/GrpcClientAdapter.hpp"
 #include "remote/model/ListTags.hpp"
 #include "widget/EditMemoWidget.hpp"
-#include "dialog/NewMemoDialog.hpp"
+#include "dialog/EditMemoDialog.hpp"
 #include "ui_MainWindow.h"
 
 #include <QListWIdgetItem>
@@ -99,7 +99,7 @@ void MainWindow::processMemoSelection(const QItemSelection& selected, const QIte
 
 void MainWindow::newMemo()
 {
-    NewMemoDialog newMemoDialog(this, memos_, tags_);
+    EditMemoDialog newMemoDialog(memos_, tags_, this);
 
     if (newMemoDialog.exec() == QDialog::Accepted)
     {
