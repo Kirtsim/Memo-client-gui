@@ -31,6 +31,8 @@ public:
 signals:
     void titleChanged(const QString& newTitle);
 
+    void descriptionChanged(const QString& newDescription);
+
     void userSelectedTagsAdded(const QStringList& tags);
 
     void userSelectedTagsRemoved(const QStringList& tags);
