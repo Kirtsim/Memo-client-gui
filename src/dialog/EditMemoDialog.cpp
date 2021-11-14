@@ -36,7 +36,8 @@ EditMemoDialog::EditMemoDialog(const std::shared_ptr<memo::MemoCollection>& memo
     using EMW = EditMemoWidget;
     connect(memoWidget_.get(), &EMW::userSelectedTagsAdded, this, &EditMemoDialog::userAddedToSelectedTagsList);
     connect(memoWidget_.get(), &EMW::userSelectedTagsRemoved, this, &EditMemoDialog::userRemovedFromSelectedTagsList);
-    connect(memoWidget_.get(), &EMW::titleChanged, this, &EditMemoDialog::memoTitleChanged);
+    connect(memoWidget_.get(), &EMW::titleChanged, this, &EditMemoDialog::updateEnableStates);
+    connect(memoWidget_.get(), &EMW::descriptionChanged, this, &EditMemoDialog::updateEnableStates);
 
     connect(tags_.get(), &memo::TagCollection::tagCacheCleared, memoWidget_.get(), &EMW::clearAvailableTags);
     connect(tags_.get(), &memo::TagCollection::tagCacheCleared, memoWidget_.get(), &EMW::clearSelectedTags);
@@ -56,15 +57,24 @@ const EditMemoWidget& EditMemoDialog::memoWidget() const
     return *memoWidget_;
 }
 
-std::shared_ptr<memo::model::Memo> EditMemoDialog::constructMemo()
+void EditMemoDialog::setDetailsFromMemo(const memo::model::Memo& memo)
 {
-    auto memo = std::make_shared<memo::model::Memo>();
-    memo->setTitle(memoWidget_->title().toStdString());
-    memo->setDescription(memoWidget_->description().toStdString());
-    memo->setTimestamp(QDateTime::currentSecsSinceEpoch());
+    QSet<QString> tags;
+    for (const auto& tag : memo.tags())
+    {
+        if (tag)
+        {
+            const auto name = QString::fromStdString(tag->name());
+            tags << name;
+        }
+    }
+    memoWidget_->setTitle(QString::fromStdString(memo.title()));
+    memoWidget_->setDescription(QString::fromStdString(memo.description()));
+    memoWidget_->setSelectedTags({tags.begin(), tags.end()});
 
-
-    return memo;
+    baseTitle_ = QString::fromStdString(memo.title());
+    baseDescription_ = QString::fromStdString(memo.description());
+    baseTags_ = tags;
 }
 
 void EditMemoDialog::userAddedToSelectedTagsList(const QStringList& tags)
@@ -76,18 +86,24 @@ void EditMemoDialog::userAddedToSelectedTagsList(const QStringList& tags)
             selectedTags_.add(tag);
         }
     }
+    updateEnableStates();
 }
 
 void EditMemoDialog::userRemovedFromSelectedTagsList(const QStringList& tags)
 {
     for (const auto& tagName : tags)
         selectedTags_.remove(tagName.toStdString());
+    updateEnableStates();
 }
 
 void EditMemoDialog::memoTitleChanged(const QString& newTitle)
 {
-    const bool enableConfirmButton = !memos_->find(newTitle.toStdString());
-    confirmButton_->setEnabled(enableConfirmButton);
+    updateEnableStates();
+}
+
+void EditMemoDialog::memoDescriptionChanged(const QString& newDescription)
+{
+    updateEnableStates();
 }
 
 void EditMemoDialog::splitNewTags(const QVector<qulonglong>& tagIds)
@@ -101,10 +117,39 @@ void EditMemoDialog::splitNewTags(const QVector<qulonglong>& tagIds)
             const auto name = QString::fromStdString(tag->name());
             if (selectedTags_.find(id))
                 selectedTagNames << name;
+            else if (baseTags_ && baseTags_->find(name) != baseTags_->end())
+            {
+                selectedTags_.add(tag);
+                selectedTagNames << name;
+            }
             else
                 availableTagNames << name;
         }
     }
     memoWidget_->setAvailableTags(availableTagNames);
     memoWidget_->setSelectedTags(selectedTagNames);
+}
+
+namespace {
+    bool haveSameTags(const QSet<QString>& baseTags, const QStringList& actualTags);
+} // namespace
+
+void EditMemoDialog::updateEnableStates()
+{
+    const auto title = memoWidget_->title();
+    const bool enableConfirmButton = !memos_->find(title.toStdString())
+            || (baseTitle_ && baseTitle_ != title)
+            || (baseDescription_ && baseDescription_ != memoWidget_->description())
+            || (baseTags_ && !haveSameTags(baseTags_.value(), memoWidget_->selectedTags()));
+    confirmButton_->setEnabled(enableConfirmButton);
+}
+
+namespace {
+    bool haveSameTags(const QSet<QString>& baseTags, const QStringList& actualTags)
+    {
+        if (baseTags.size() != actualTags.size())
+            return false;
+        return std::all_of(actualTags.begin(), actualTags.end(), [&baseTags](const QString& tag)
+        { return baseTags.find(tag) != baseTags.end(); });
+    }
 }

@@ -1,8 +1,10 @@
 #pragma once
 #include "manager/TagVault.hpp"
 #include <QDialog>
+#include <QSet>
 
 #include <memory>
+#include <optional>
 
 namespace memo { class MemoCollection; }
 namespace memo { class TagCollection; }
@@ -24,7 +26,7 @@ public:
 
     const EditMemoWidget& memoWidget() const;
 
-    std::shared_ptr<memo::model::Memo> constructMemo();
+    void setDetailsFromMemo(const memo::model::Memo& memo);
 
 private slots:
     void userAddedToSelectedTagsList(const QStringList& tags);
@@ -33,7 +35,11 @@ private slots:
 
     void memoTitleChanged(const QString& newTitle);
 
+    void memoDescriptionChanged(const QString& newDescription);
+
     void splitNewTags(const QVector<qulonglong>& tagIds);
+
+    void updateEnableStates();
 
 private:
     std::unique_ptr<EditMemoWidget> memoWidget_;
@@ -42,6 +48,9 @@ private:
     memo::TagVault selectedTags_;
     std::shared_ptr<memo::MemoCollection> memos_;
     std::shared_ptr<memo::TagCollection> tags_;
+    std::optional<QString> baseTitle_;
+    std::optional<QString> baseDescription_;
+    std::optional<QSet<QString>> baseTags_;
 };
 
 
