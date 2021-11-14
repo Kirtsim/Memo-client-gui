@@ -23,7 +23,10 @@ public:
 
 private slots:
     void processMemoSelection(const QItemSelection& selected, const QItemSelection& deselected);
+
     void newMemo();
+
+    void editMemo();
 
 private:
     void displayMemo(const memo::model::Memo& memo);

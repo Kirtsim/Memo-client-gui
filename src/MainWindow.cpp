@@ -24,6 +24,10 @@ namespace {
     std::unique_ptr<memo::IGrpcClientAdapter> CreateMemoClient();
 
     TagVector collectTags(const TagCollection& tags, const QStringList& tagNames);
+
+    unsigned long getMemoIdFromSelectedRow(const QListWidget& memoListWidget);
+
+    QListWidgetItem* getSelectedItem(const QListWidget& memoListWidget);
 }
 
 MainWindow::MainWindow()
@@ -37,6 +41,7 @@ MainWindow::MainWindow()
 
     connect(selectionModel, &QItemSelectionModel::selectionChanged, this, &MainWindow::processMemoSelection);
     connect(ui_->newMemoButton, &QPushButton::clicked, this, &MainWindow::newMemo);
+    connect(ui_->editMemoButton, &QPushButton::clicked, this, &MainWindow::editMemo);
     connect(ui_->refreshButton, &QPushButton::clicked, memos_.get(), &MemoCollection::listAll);
     connect(ui_->deleteButton, &QPushButton::clicked, this, [&]() {
          auto selected = ui_->memoList->selectedItems();
@@ -63,6 +68,19 @@ MainWindow::MainWindow()
             const auto title = QString::fromStdString(newMemo->title());
             auto listItem = new QListWidgetItem(title, ui_->memoList);
             listItem->setData(Qt::ItemDataRole::UserRole, QVariant(static_cast<qlonglong>(id)));
+        }
+    });
+
+    connect(memos_.get(), &MemoCollection::memoUpdated, this, [&](unsigned long id) {
+        auto memo = memos_->find(id);
+        if (!memo)
+            return;
+        const auto idOfSelected = getMemoIdFromSelectedRow(*ui_->memoList);
+        const auto selectedItem = getSelectedItem(*ui_->memoList);
+        if (id == idOfSelected && selectedItem)
+        {
+            selectedItem->setText(QString::fromStdString(memo->title()));
+            displayMemo(*memo);
         }
     });
 
@@ -115,6 +133,32 @@ void MainWindow::newMemo()
     }
 }
 
+void MainWindow::editMemo()
+{
+    const auto selectedMemoId = getMemoIdFromSelectedRow(*ui_->memoList);
+    const auto selectedMemo = memos_->find(selectedMemoId);
+    if (!selectedMemo)
+        return;
+
+    EditMemoDialog dialog(memos_, tags_, this);
+    dialog.setDetailsFromMemo(*selectedMemo);
+    if (dialog.exec() == QDialog::Accepted)
+    {
+        const auto& widget = dialog.memoWidget();
+        selectedMemo->setTitle(widget.title().toStdString());
+        selectedMemo->setDescription(widget.description().toStdString());
+
+        std::vector<std::shared_ptr<memo::model::Tag>> updatedTags;
+        for (const auto& tagName : widget.selectedTags())
+        {
+            if (auto tag = tags_->find(tagName.toStdString()))
+                updatedTags.push_back(tag);
+        }
+        selectedMemo->setTags(updatedTags);
+        memos_->add(selectedMemo);
+    }
+}
+
 void MainWindow::displayMemo(const memo::model::Memo& memo)
 {
     ui_->memoTitle->setText(QString::fromStdString(memo.title()));
@@ -154,5 +198,18 @@ namespace {
             }
         }
         return resultTags;
+    }
+
+    unsigned long getMemoIdFromSelectedRow(const QListWidget& memoListWidget)
+    {
+        if (auto item = getSelectedItem(memoListWidget))
+            return item->data(Qt::ItemDataRole::UserRole).toULongLong();
+        return -1;
+    }
+
+    QListWidgetItem* getSelectedItem(const QListWidget& memoListWidget)
+    {
+        const auto selectedItems = memoListWidget.selectedItems();
+        return selectedItems.empty() ? nullptr : selectedItems.front();
     }
 } // namespace
