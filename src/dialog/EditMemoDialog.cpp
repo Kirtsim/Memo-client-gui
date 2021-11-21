@@ -96,16 +96,6 @@ void EditMemoDialog::userRemovedFromSelectedTagsList(const QStringList& tags)
     updateEnableStates();
 }
 
-void EditMemoDialog::memoTitleChanged(const QString& newTitle)
-{
-    updateEnableStates();
-}
-
-void EditMemoDialog::memoDescriptionChanged(const QString& newDescription)
-{
-    updateEnableStates();
-}
-
 void EditMemoDialog::splitNewTags(const QVector<qulonglong>& tagIds)
 {
     QStringList selectedTagNames;

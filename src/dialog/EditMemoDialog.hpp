@@ -33,10 +33,6 @@ private slots:
 
     void userRemovedFromSelectedTagsList(const QStringList& tags);
 
-    void memoTitleChanged(const QString& newTitle);
-
-    void memoDescriptionChanged(const QString& newDescription);
-
     void splitNewTags(const QVector<qulonglong>& tagIds);
 
     void updateEnableStates();
