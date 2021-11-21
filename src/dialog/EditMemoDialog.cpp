@@ -127,10 +127,10 @@ namespace {
 void EditMemoDialog::updateEnableStates()
 {
     const auto title = memoWidget_->title();
-    const bool enableConfirmButton = !memos_->find(title.toStdString())
-            || (baseTitle_ && baseTitle_ != title)
+    const bool enableConfirmButton = !memos_->find(title.toStdString()) &&
+            ((baseTitle_ && baseTitle_ != title)
             || (baseDescription_ && baseDescription_ != memoWidget_->description())
-            || (baseTags_ && !haveSameTags(baseTags_.value(), memoWidget_->selectedTags()));
+            || (baseTags_ && !haveSameTags(baseTags_.value(), memoWidget_->selectedTags())));
     confirmButton_->setEnabled(enableConfirmButton);
 }
 
