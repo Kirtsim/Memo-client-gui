@@ -253,6 +253,13 @@
           </property>
          </spacer>
         </item>
+        <item>
+         <widget class="QPushButton" name="manageTagsButton">
+          <property name="text">
+           <string>Manage Tags</string>
+          </property>
+         </widget>
+        </item>
        </layout>
       </widget>
      </widget>

@@ -6,6 +6,7 @@
 #include "remote/model/ListTags.hpp"
 #include "widget/EditMemoWidget.hpp"
 #include "dialog/EditMemoDialog.hpp"
+#include "dialog/ManageTagsDialog.hpp"
 #include "ui_MainWindow.h"
 
 #include <QListWIdgetItem>
@@ -43,6 +44,7 @@ MainWindow::MainWindow()
     connect(ui_->newMemoButton, &QPushButton::clicked, this, &MainWindow::newMemo);
     connect(ui_->editMemoButton, &QPushButton::clicked, this, &MainWindow::editMemo);
     connect(ui_->refreshButton, &QPushButton::clicked, memos_.get(), &MemoCollection::listAll);
+    connect(ui_->manageTagsButton, &QPushButton::clicked, this, [&]() { ManageTagsDialog(tags_, this).exec(); });
     connect(ui_->deleteButton, &QPushButton::clicked, this, [&]() {
          auto selected = ui_->memoList->selectedItems();
          if (!selected.isEmpty())
