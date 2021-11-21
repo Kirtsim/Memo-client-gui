@@ -50,6 +50,7 @@ target_sources(Memo_client_gui
         src/remote/concurrency/RemovalWorker.cpp
         src/widget/EditMemoWidget.cpp
         src/dialog/EditMemoDialog.cpp
+        src/dialog/ManageTagsDialog.cpp
         src/manager/MemoCollection.cpp
         src/manager/TagCollection.cpp
         src/manager/MemoVault.cpp
@@ -83,6 +84,7 @@ target_sources(Memo_client_gui
         src/remote/model/RemoveTag.hpp
         src/widget/EditMemoWidget.hpp
         src/dialog/EditMemoDialog.hpp
+        src/dialog/ManageTagsDialog.hpp
         src/manager/MemoCollection.hpp
         src/manager/TagCollection.hpp
         src/manager/MemoVault.hpp
