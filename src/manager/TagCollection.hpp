@@ -30,6 +30,8 @@ public:
 
     std::shared_ptr<model::Tag> find(const std::string& name) const;
 
+    std::vector<std::shared_ptr<model::Tag>> filterByPrefix(const std::string& prefix);
+
     int count() const;
 
     bool empty() const;

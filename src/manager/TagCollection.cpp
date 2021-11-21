@@ -59,6 +59,16 @@ std::shared_ptr<model::Tag> TagCollection::find(const std::string& name) const
     return tagVault_->find(name);
 }
 
+std::vector<std::shared_ptr<model::Tag>> TagCollection::filterByPrefix(const std::string& prefix)
+{
+    using TagPtr = std::shared_ptr<model::Tag>;
+    const auto tags = tagVault_->list();
+    std::vector<TagPtr> filtered;
+    std::copy_if(tags.begin(), tags.end(), std::back_inserter(filtered),
+                 [&prefix](const TagPtr& tag) { return tag->name().starts_with(prefix); });
+    return filtered;
+}
+
 int TagCollection::count() const
 {
     return tagVault_->size();

@@ -24,7 +24,14 @@ ManageTagsDialog::~ManageTagsDialog() = default;
 
 void ManageTagsDialog::displayTagsWithPrefix(const QString& prefix)
 {
-
+    const auto filteredTags = tags_->filterByPrefix(prefix.toStdString());
+    ui_->tagsList->clear();
+    for (const auto& tag : filteredTags)
+    {
+        const auto tagName = QString::fromStdString(tag->name());
+        auto item = new QListWidgetItem(tagName, ui_->tagsList);
+        item->setData(Qt::ItemDataRole::UserRole, QVariant(static_cast<qlonglong>(tag->id())));
+    }
 }
 
 void ManageTagsDialog::populateListWidgetWithTags(const QList<qulonglong>& tagIds)
