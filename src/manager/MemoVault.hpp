@@ -50,6 +50,12 @@ public:
     /// @brief Removes all memos. After this operation MemoVault will be empty.
     void clear();
 
+    /// @brief Returns the number of memos in the vault.
+    int size() const;
+
+    /// @brief Returns true if the vault is empty, false if it contains at least one Tag.
+    bool empty() const;
+
 private:
     void _remove(const model::Memo& memo);
 

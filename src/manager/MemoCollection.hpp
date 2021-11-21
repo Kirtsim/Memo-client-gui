@@ -40,6 +40,10 @@ public:
 
     std::shared_ptr<model::Memo> find(const std::string& title) const;
 
+    int count() const;
+
+    bool empty() const;
+
     void visit(const remote::QueryMemoWorker& worker) override;
 
     void visit(const remote::CreateMemoWorker& worker) override;

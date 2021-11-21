@@ -83,6 +83,18 @@ void MemoVault::clear()
     titleToMemo_.clear();
 }
 
+int MemoVault::size() const
+{
+    const LockGuard guard(mutex_);
+    return idToMemo_.size();
+}
+
+bool MemoVault::empty() const
+{
+    const LockGuard guard(mutex_);
+    return idToMemo_.empty();
+}
+
 void MemoVault::_remove(const model::Memo& memo)
 {
     idToMemo_.erase(memo.id());

@@ -72,6 +72,16 @@ std::shared_ptr<model::Memo> MemoCollection::find(const std::string& title) cons
     return memoVault_->find(title);
 }
 
+int MemoCollection::count() const
+{
+    return memoVault_->size();
+}
+
+bool MemoCollection::empty() const
+{
+    return memoVault_->empty();
+}
+
 MemoVector MemoCollection::listAll()
 {
     const auto requestUuid = GenerateQUuid();

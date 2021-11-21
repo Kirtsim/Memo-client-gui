@@ -30,6 +30,10 @@ public:
 
     std::shared_ptr<model::Tag> find(const std::string& name) const;
 
+    int count() const;
+
+    bool empty() const;
+
     void visit(const remote::QueryTagWorker& worker) override;
 
     void visit(const remote::CreateTagWorker& worker) override;

@@ -83,6 +83,18 @@ void TagVault::clear()
     nameToTag_.clear();
 }
 
+int TagVault::size() const
+{
+    const LockGuard lock(mutex_);
+    return static_cast<int>(idToTag_.size());
+}
+
+bool TagVault::empty() const
+{
+    const LockGuard lock(mutex_);
+    return idToTag_.empty();
+}
+
 void TagVault::_remove(const model::Tag& tag)
 {
     idToTag_.erase(tag.id());

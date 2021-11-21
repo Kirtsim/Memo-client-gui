@@ -59,6 +59,16 @@ std::shared_ptr<model::Tag> TagCollection::find(const std::string& name) const
     return tagVault_->find(name);
 }
 
+int TagCollection::count() const
+{
+    return tagVault_->size();
+}
+
+bool TagCollection::empty() const
+{
+    return tagVault_->empty();
+}
+
 bool TagCollection::add(const std::shared_ptr<model::Tag>& tag)
 {
     if (!tag)

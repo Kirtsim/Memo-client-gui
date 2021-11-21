@@ -48,6 +48,12 @@ public:
     /// @brief Removes all tags. After this operation TagVault will be empty.
     void clear();
 
+    /// @brief Returns the number of tags in the vault.
+    int size() const;
+
+    /// @brief Returns true if the vault is empty, false if it contains at least one Tag.
+    bool empty() const;
+
 private:
     void _remove(const model::Tag& tag);
 
