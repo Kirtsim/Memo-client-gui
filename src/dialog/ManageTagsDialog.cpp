@@ -17,6 +17,7 @@ ManageTagsDialog::ManageTagsDialog(const std::shared_ptr<memo::TagCollection>& t
     connect(searchBar, &QLineEdit::textChanged, this, &ManageTagsDialog::displayTagsWithPrefix);
     connect(tags_.get(), &memo::TagCollection::tagsAdded, this, &ManageTagsDialog::populateListWidgetWithTags);
 
+    updateEnableStates();
     tags_->listAll();
 }
 
@@ -32,6 +33,12 @@ void ManageTagsDialog::displayTagsWithPrefix(const QString& prefix)
         auto item = new QListWidgetItem(tagName, ui_->tagsList);
         item->setData(Qt::ItemDataRole::UserRole, QVariant(static_cast<qlonglong>(tag->id())));
     }
+    updateEnableStates();
+    updateUiElementsBasedOnSearchbar();
+}
+
+namespace {
+    std::shared_ptr<memo::model::Tag> getSelectedTag(const QListWidget& listWidget, const memo::TagCollection& tags);
 }
 
 void ManageTagsDialog::populateListWidgetWithTags(const QList<qulonglong>& tagIds)
@@ -48,5 +55,43 @@ void ManageTagsDialog::populateListWidgetWithTags(const QList<qulonglong>& tagId
         const auto tagName = QString::fromStdString(tag->name());
         auto item = new QListWidgetItem(tagName, ui_->tagsList);
         item->setData(Qt::ItemDataRole::UserRole, QVariant(static_cast<qlonglong>(tag->id())));
+    }
+}
+
+void ManageTagsDialog::updateEnableStates()
+{
+    const bool searchBarNotEmpty = !ui_->searchBar->text().isEmpty();
+
+    ui_->updateButton->setEnabled(searchBarNotEmpty);
+    ui_->colorPicker->setEnabled(searchBarNotEmpty);
+}
+
+void ManageTagsDialog::updateUiElementsBasedOnSearchbar()
+{
+    const auto searchBarText = ui_->searchBar->text();
+    ui_->tagName->setText(searchBarText);
+
+    auto searchedTag = tags_->find(searchBarText.toStdString());
+    auto selectedTag = getSelectedTag(*ui_->tagsList, *tags_);
+
+    const QString buttonText = (searchedTag || selectedTag) ? "Update" : "Add";
+    ui_->updateButton->setText(buttonText);
+
+    auto tag = searchedTag ? searchedTag : selectedTag;
+
+    const int index = tag ? 1 : 0;
+    ui_->colorPicker->setCurrentIndex(index);
+}
+
+namespace {
+    std::shared_ptr<memo::model::Tag> getSelectedTag(const QListWidget& listWidget, const memo::TagCollection& tags)
+    {
+        const auto items = listWidget.selectedItems();
+        if (!items.empty())
+        {
+            const auto id = items.front()->data(Qt::ItemDataRole::UserRole).toULongLong();
+            return tags.find(id);
+        }
+        return nullptr;
     }
 }

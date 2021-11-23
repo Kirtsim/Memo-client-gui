@@ -22,6 +22,11 @@ private slots:
     void populateListWidgetWithTags(const QList<qulonglong>& tagIds);
 
 private:
+    void updateEnableStates();
+
+    void updateUiElementsBasedOnSearchbar();
+
+private:
     std::unique_ptr<Ui::ManageTagsDialog> ui_;
     std::shared_ptr<memo::TagCollection> tags_;
 };

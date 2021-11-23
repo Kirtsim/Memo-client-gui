@@ -54,6 +54,37 @@
         </widget>
        </item>
        <item>
+        <widget class="QComboBox" name="colorPicker">
+         <item>
+          <property name="text">
+           <string>white</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>red</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>green</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>blue</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="updateButton">
+         <property name="text">
+          <string>Update</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <spacer name="verticalSpacer">
          <property name="orientation">
           <enum>Qt::Vertical</enum>
@@ -65,13 +96,6 @@
           </size>
          </property>
         </spacer>
-       </item>
-       <item>
-        <widget class="QPushButton" name="newButton">
-         <property name="text">
-          <string>New</string>
-         </property>
-        </widget>
        </item>
       </layout>
      </item>
