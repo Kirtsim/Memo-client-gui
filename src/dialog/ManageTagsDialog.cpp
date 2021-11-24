@@ -63,7 +63,7 @@ void ManageTagsDialog::updateEnableStates()
     const bool searchBarNotEmpty = !ui_->searchBar->text().isEmpty();
 
     ui_->updateButton->setEnabled(searchBarNotEmpty);
-    ui_->colorPicker->setEnabled(searchBarNotEmpty);
+    ui_->colorButton->setEnabled(searchBarNotEmpty);
 }
 
 void ManageTagsDialog::updateUiElementsBasedOnSearchbar()
@@ -79,8 +79,8 @@ void ManageTagsDialog::updateUiElementsBasedOnSearchbar()
 
     auto tag = searchedTag ? searchedTag : selectedTag;
 
-    const int index = tag ? 1 : 0;
-    ui_->colorPicker->setCurrentIndex(index);
+//    const auto color = tag ? QColor() : 0;
+//    ui_->colorSample->setBackgroundBrush(QBrush());
 }
 
 namespace {
