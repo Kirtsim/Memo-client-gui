@@ -8,6 +8,8 @@ namespace Ui { class ManageTagsDialog; }
 
 namespace memo { class TagCollection; }
 
+class QColorDialog;
+
 class ManageTagsDialog : public QDialog
 {
     Q_OBJECT
@@ -21,6 +23,8 @@ private slots:
 
     void populateListWidgetWithTags(const QList<qulonglong>& tagIds);
 
+    void pickColor();
+
 private:
     void updateEnableStates();
 
@@ -29,6 +33,7 @@ private:
 private:
     std::unique_ptr<Ui::ManageTagsDialog> ui_;
     std::shared_ptr<memo::TagCollection> tags_;
+    std::unique_ptr<QColorDialog> colorDialog_;
 };
 
 

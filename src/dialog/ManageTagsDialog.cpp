@@ -6,6 +6,12 @@
 #include <QLineEdit>
 #include <QListWidget>
 #include <QListWidgetItem>
+#include <QColorDialog>
+#include <QPalette>
+
+namespace {
+    void updateIconColor(QPushButton& button, const QColor& color);
+}
 
 ManageTagsDialog::ManageTagsDialog(const std::shared_ptr<memo::TagCollection>& tags, QWidget* parent)
     : QDialog(parent)
@@ -13,9 +19,11 @@ ManageTagsDialog::ManageTagsDialog(const std::shared_ptr<memo::TagCollection>& t
     , tags_(tags)
 {
     ui_->setupUi(this);
-    auto searchBar = ui_->searchBar;
-    connect(searchBar, &QLineEdit::textChanged, this, &ManageTagsDialog::displayTagsWithPrefix);
+    connect(ui_->searchBar, &QLineEdit::textChanged, this, &ManageTagsDialog::displayTagsWithPrefix);
     connect(tags_.get(), &memo::TagCollection::tagsAdded, this, &ManageTagsDialog::populateListWidgetWithTags);
+    connect(ui_->colorButton, &QPushButton::clicked, this, &ManageTagsDialog::pickColor);
+
+    ui_->colorButton->setIcon(QIcon(QPixmap(16, 16)));
 
     updateEnableStates();
     tags_->listAll();
@@ -58,6 +66,17 @@ void ManageTagsDialog::populateListWidgetWithTags(const QList<qulonglong>& tagId
     }
 }
 
+void ManageTagsDialog::pickColor()
+{
+    if (!colorDialog_)
+        colorDialog_ = std::make_unique<QColorDialog>(this);
+    if (colorDialog_->exec() == QDialog::Accepted)
+    {
+        const auto color = colorDialog_->selectedColor();
+        updateIconColor(*ui_->colorButton, color);
+    }
+}
+
 void ManageTagsDialog::updateEnableStates()
 {
     const bool searchBarNotEmpty = !ui_->searchBar->text().isEmpty();
@@ -78,12 +97,18 @@ void ManageTagsDialog::updateUiElementsBasedOnSearchbar()
     ui_->updateButton->setText(buttonText);
 
     auto tag = searchedTag ? searchedTag : selectedTag;
-
-//    const auto color = tag ? QColor() : 0;
-//    ui_->colorSample->setBackgroundBrush(QBrush());
+    const auto buttonIconColor = tag ? QColor("red") : QColor("white");
+    updateIconColor(*ui_->colorButton, buttonIconColor);
 }
 
 namespace {
+    void updateIconColor(QPushButton& button, const QColor& color)
+    {
+        QPixmap pixmap(14, 14);
+        pixmap.fill(color);
+        button.setIcon(QIcon(pixmap));
+    }
+
     std::shared_ptr<memo::model::Tag> getSelectedTag(const QListWidget& listWidget, const memo::TagCollection& tags)
     {
         const auto items = listWidget.selectedItems();
