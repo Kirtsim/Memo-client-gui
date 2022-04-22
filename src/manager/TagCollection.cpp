@@ -139,7 +139,6 @@ void TagCollection::visit(const remote::QueryTagWorker& worker)
         {
             tagVault_->add(tag);
             ids << tag->id();
-            emit tagAdded(tag->id());
         }
         emit tagsAdded(ids);
     }
