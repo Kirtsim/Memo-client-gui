@@ -22,12 +22,12 @@ const std::string& Tag::name() const
     return name_;
 }
 
-void Tag::setColor(int color)
+void Tag::setColor(const Color& color)
 {
     color_ = color;
 }
 
-int Tag::color() const
+const Color& Tag::color() const
 {
     return color_;
 }

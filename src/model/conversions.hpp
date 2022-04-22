@@ -1,5 +1,6 @@
 #include "model/Memo.hpp"
 #include "model/Tag.hpp"
+#include "model/Color.hpp"
 #include "Memo.pb.h"
 #include "Tag.pb.h"
 #include <map>
@@ -13,5 +14,9 @@ proto::Tag ModelToProto(const model::Tag& tag);
 model::Memo ProtoToModel(const proto::Memo& memo, const std::map<unsigned long, std::shared_ptr<model::Tag>>& tags={});
 
 model::Tag ProtoToModel(const proto::Tag& tag);
+
+int ColorToInt(const model::Color& color);
+
+model::Color IntToColor(int numericColor);
 
 } // namespace memo

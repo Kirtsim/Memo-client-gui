@@ -58,6 +58,10 @@ target_sources(Memo_client_gui
         src/tools/uuid.cpp
 
         PUBLIC
+        src/model/Memo.hpp
+        src/model/Tag.hpp
+        src/model/Color.hpp
+        src/model/conversions.hpp
         src/remote/IGrpcClient.hpp
         src/remote/GrpcClient.hpp
         src/remote/IGrpcClientAdapter.hpp

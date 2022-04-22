@@ -1,4 +1,5 @@
 #pragma once
+#include "model/Color.hpp"
 #include <string>
 
 
@@ -15,9 +16,9 @@ public:
 
     const std::string& name() const;
 
-    void setColor(int color);
+    void setColor(const Color& color);
 
-    int color() const;
+    const Color& color() const;
 
     void setTimestamp(unsigned long timestamp);
 
@@ -26,7 +27,7 @@ public:
 private:
     unsigned long id_ = 0;
     std::string name_;
-    int color_ = 0;
+    Color color_;
     unsigned long timestamp_ = 0;
 };
 
