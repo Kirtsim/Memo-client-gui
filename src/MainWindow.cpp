@@ -9,7 +9,7 @@
 #include "dialog/ManageTagsDialog.hpp"
 #include "ui_MainWindow.h"
 
-#include <QListWIdgetItem>
+#include <QListWidgetItem>
 #include <QDateTime>
 #include <QMessageBox>
 
