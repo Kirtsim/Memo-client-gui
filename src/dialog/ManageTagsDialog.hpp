@@ -24,6 +24,8 @@ private slots:
 
     void onUpdateButtonClicked();
 
+    void onRemoveButtonClicked();
+
     void displayTagsWithPrefix(const QString& prefix);
 
     void populateListWidgetWithTags(const QList<qulonglong>& tagIds);

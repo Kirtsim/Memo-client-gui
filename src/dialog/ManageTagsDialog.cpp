@@ -29,9 +29,11 @@ ManageTagsDialog::ManageTagsDialog(const std::shared_ptr<memo::TagCollection>& t
     connect(tags_.get(), &memo::TagCollection::tagsAdded, this, &ManageTagsDialog::populateListWidgetWithTags);
     connect(tags_.get(), &memo::TagCollection::tagAdded, this, [&]() { displayTagsWithPrefix(ui_->searchBar->text()); });
     connect(tags_.get(), &memo::TagCollection::tagUpdated, this, [&]() { displayTagsWithPrefix(ui_->searchBar->text()); });
+    connect(tags_.get(), &memo::TagCollection::tagRemoved, this, [&]() { displayTagsWithPrefix(ui_->searchBar->text()); });
     connect(ui_->colorButton, &QPushButton::clicked, this, &ManageTagsDialog::pickColor);
     connect(ui_->addButton, &QPushButton::clicked, this, &ManageTagsDialog::onAddButtonClicked);
     connect(ui_->updateButton, &QPushButton::clicked, this, &ManageTagsDialog::onUpdateButtonClicked);
+    connect(ui_->removeButton, &QPushButton::clicked, this, &ManageTagsDialog::onRemoveButtonClicked);
     connect(ui_->okButton, &QPushButton::clicked, this, &QDialog::accept);
     connect(ui_->cancelButton, &QPushButton::clicked, this, &QDialog::reject);
 
@@ -62,6 +64,15 @@ void ManageTagsDialog::onUpdateButtonClicked()
         selectedTag->setColor(ToColor(displayedColor_));
         tags_->add(selectedTag);
     }
+}
+
+void ManageTagsDialog::onRemoveButtonClicked()
+{
+    const auto tag = getSelectedTag(*ui_->tagsList, *tags_);
+    if (!tag)
+        return;
+
+    tags_->remove(tag->id());
 }
 
 void ManageTagsDialog::displayTagsWithPrefix(const QString& prefix)
@@ -135,6 +146,8 @@ void ManageTagsDialog::updateEnableStates()
 
     const bool colorUpdated = selectedTag && displayedColor_ != ToQColor(selectedTag->color());
     ui_->updateButton->setEnabled(colorUpdated);
+
+    ui_->removeButton->setEnabled(selectedTag != nullptr);
 }
 
 void ManageTagsDialog::updateDisplayedColor(const QColor& color)
@@ -166,5 +179,20 @@ namespace {
             return tags.find(id);
         }
         return nullptr;
+    }
+
+    void removeTagFromListWidgetById(QListWidget& listWidget, const unsigned long id)
+    {
+        for (int i = 0; i < listWidget.count(); ++i)
+        {
+            auto item = listWidget.item(i);
+            const auto item_id = static_cast<unsigned long>(item->data(Qt::ItemDataRole::UserRole).value<qulonglong>());
+            if (item_id == id)
+            {
+                listWidget.takeItem(i);
+                delete item;
+                break;
+            }
+        }
     }
 }
